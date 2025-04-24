@@ -1,15 +1,17 @@
 package com.example.cloudproject.Person.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Entity
 @Data
+@Table(name = "person") // Nombre de la tabla en la base de datos
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Person {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;
