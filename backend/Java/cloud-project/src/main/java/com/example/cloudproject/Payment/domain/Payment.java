@@ -3,14 +3,16 @@ package com.example.cloudproject.Payment.domain;
 import com.example.cloudproject.Client.domain.Client;
 import com.example.cloudproject.Plan.domain.Plan;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Payment{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -20,8 +22,9 @@ public class Payment{
     @JoinColumn(name = "id_plan", nullable = false) // Columna FK
     private Plan plan;
 
-    @OneToOne(fetch = FetchType.LAZY) // Relación Many-to-One con Client
+    @ManyToOne(fetch = FetchType.LAZY) // Relación Many-to-One con Client
     @JoinColumn(name = "id_client", nullable = false) // Columna FK
+    @EqualsAndHashCode.Exclude // Excluir colección de equals/hashCode
     private Client client;
 
     private LocalDate date;
