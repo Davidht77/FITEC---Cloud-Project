@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@Table(name = "person")
+@Table(name = "cliente")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Client{
@@ -22,9 +22,13 @@ public class Client{
 
     private String name;
 
-    private String description;
+    private String lastName;
 
-    private double price;
+    private String email;
+
+    private String phone;
+
+    private String address;
 
     @ManyToOne(fetch = FetchType.LAZY) // Relación Many-to-One con Plan
     @JoinColumn(name = "id_plan", nullable = false)
