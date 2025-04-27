@@ -17,6 +17,7 @@ class EmployeeBase(BaseModel):
     id: uuid.UUID
     name: str
     lastName: str | None = None
+    age: int
     phone: float
     email: float | None = None
     salary: float | None = None
