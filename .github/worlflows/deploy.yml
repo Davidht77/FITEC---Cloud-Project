@@ -1,0 +1,28 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Solo cuando hagas push a la rama principal
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Usa la última imagen de Ubuntu en GitHub Actions
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # Este paso es necesario para clonar tu repositorio
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3  # Usa la acción para gestionar claves SSH
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}  # Cargar clave SSH privada desde GitHub Secrets
+
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_IP }} << 'EOF'
+          cd /ruta/de/tu/proyecto || exit
+          git pull origin main  # Asegúrate de que esté en la rama correcta
+          docker-compose down  # Detén el contenedor actual (si usas Docker)
+          docker-compose up -d  # Arranca el contenedor con los cambios
+        EOF
