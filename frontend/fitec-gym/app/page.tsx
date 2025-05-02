@@ -7,25 +7,36 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24 flex flex-col items-center">
-        {/* Announcement Banner */}
-        <div className="bg-sky-800/50 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-8 border border-sky-700">
-          ¡Nuevo! Inauguramos área de CrossFit
-        </div>
+      <section
+        className="relative w-full h-[80vh] justify-center px-4 py-16 md:py-24 flex flex-col items-center bg-fixed bg-center bg-cover"
+        style={{ backgroundImage: "url('/fitecfondo.png')" }}
+      >
+        
 
-        {/* Hero Content */}
-        <div className="text-center max-w-4xl mx-auto space-y-6">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+        {/* Contenido sobre la imagen */}
+        <div className="relative z-10 text-center max-w-4xl mx-auto space-y-6">
+          
+          {/* Banner anuncio */}
+          <div className="bg-sky-800/50 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-8 border border-sky-700">
+            ¡Nuevo! Inauguramos área de CrossFit
+          </div>
+
+          {/* Título principal */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
             Transforma tu cuerpo{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">Supera</span>{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
+              Supera
+            </span>{" "}
             tus límites
           </h1>
 
+          {/* Descripción */}
           <p className="text-lg text-sky-100 max-w-2xl mx-auto">
             FITEC es el gimnasio completo que te ofrece entrenamiento personalizado, equipos de última generación y una
             comunidad que te impulsa a ser mejor.
           </p>
 
+          {/* Botones */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button className="bg-yellow-400 hover:bg-yellow-500 text-sky-900 font-medium rounded-lg px-8 py-6 text-lg flex items-center gap-2">
               <span>Prueba Gratuita</span>
@@ -33,13 +44,15 @@ export default function Home() {
             </Button>
             <Button
               variant="outline"
-              className="border-sky-600 text-white hover:bg-sky-800 rounded-lg px-8 py-6 text-lg"
+              className="border-sky-600 text-blue-800 hover:text-yellow rounded-lg px-8 py-6 text-lg"
             >
               Ver Instalaciones
             </Button>
           </div>
+
         </div>
       </section>
+
 
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
