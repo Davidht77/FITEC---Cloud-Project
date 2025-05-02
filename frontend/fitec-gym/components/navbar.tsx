@@ -62,7 +62,7 @@ export default function Navbar() {
 
       {/* Desktop menu */}
       <nav className="hidden md:flex items-center gap-8">
-        {navItems.slice(1).map((item) => (
+        {navItems.map((item) => (
           <Link
             key={item.path}
             href={item.path}
@@ -77,9 +77,11 @@ export default function Navbar() {
         <Link href="/login" className="text-sm hover:text-yellow-400 transition-colors">
           Iniciar Sesión
         </Link>
+        <Link href="/register">
         <Button className="bg-yellow-400 hover:bg-yellow-500 text-sky-900 font-medium rounded-full px-4 py-2 text-sm">
           Registrarse
         </Button>
+        </Link>
       </div>
     </header>
   )
