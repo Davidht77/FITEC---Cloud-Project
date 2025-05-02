@@ -8,6 +8,8 @@ export class ClientService {
     constructor(
         @InjectModel(Client.name) private clientModel: Model<Client>
     ) {}
+
+    //Register a new client
     async createClient(client: Client): Promise<Client> {
         const newClient = new this.clientModel(client).save();
         return newClient;
