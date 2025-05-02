@@ -1,10 +1,15 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { Question } from './schema/question.schema';
 import { QuestionService } from './question.service';
 
 @Controller('question')
 export class QuestionController {
     constructor(private questionService: QuestionService){}
+
+    @Post()
+    create(@Body() question: Question): Promise<Question> {
+        return this.questionService.createQuestion(question);
+    }
 
     @Get()
     getAll(): Promise<Question[]> {
