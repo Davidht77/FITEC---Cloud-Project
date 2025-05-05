@@ -3,7 +3,7 @@ import { randomUUID, UUID } from "crypto";
 
 @Schema()
 export class Feedback {
-    @Prop({ default: randomUUID(), required: true })
+    @Prop({ default: randomUUID(), required: true, index: true })
     feedbackId: UUID;
     @Prop({ required: true })
     clientId: UUID;

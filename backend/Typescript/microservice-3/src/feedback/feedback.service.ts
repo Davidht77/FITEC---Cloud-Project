@@ -22,4 +22,8 @@ export class FeedbackService {
         this.feedbackModel.findByIdAndDelete(feedbackId).exec();
         return null;
     }
+
+    async getFeedbackByClientId(clientId: string): Promise<Feedback[]> {
+        return this.feedbackModel.find({ clientId }).exec();
+    }
 }
