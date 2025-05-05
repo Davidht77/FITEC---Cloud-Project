@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: orquestador
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: client-route
+            uri: ${CLIENT_URL:http://localhost:8081}
+            predicates:
+              - Path=/client/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+          - id: employee-route
+            uri: ${EMPLOYEE_URL:http://localhost:8082}
+            predicates:
+              - Path=/employee/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+          - id: nosql-route
+            uri: ${NESTJS_URL:http://localhost:8082}
+            predicates:
+              - Path=/nosql/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service

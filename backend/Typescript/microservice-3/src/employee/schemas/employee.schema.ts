@@ -3,19 +3,22 @@ import { randomUUID, UUID } from "crypto";
 
 @Schema()
 export class Employee{
-    @Prop({default: randomUUID()})
+    @Prop({index: true})
     id: UUID;
-    @Prop()
+    @Prop({required: true})
     name : string;
-    @Prop()
+    @Prop({required: true})
     lastName : string;
-    @Prop()
+    @Prop({required: true})
     age : number;
-    @Prop()
+    @Prop({required: true})
     email : string;
-    @Prop()
+    @Prop({required: true})
     phone : string;
+    @Prop({required: true})
     salary : number;
+    @Prop({required: true})
+    date_contract : Date;
 }
 
 export const EmployeeSchema = SchemaFactory.createForClass(Employee);
