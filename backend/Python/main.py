@@ -6,6 +6,8 @@ from database import SessionLocal, engine # type: ignore
 from sqlalchemy.orm import Session # type: ignore
 import uuid
 
+# Por ahora funciona. No olvidar seguir los pasos en el Google Docs para correrlo
+
 # Crea una instancia de la aplicación FastAPI
 app = FastAPI()
 
@@ -68,3 +70,7 @@ async def read_sede(sede_id: uuid.UUID, db: db_dependency):
     if db_sede is None:
         raise HTTPException(status_code=404, detail="Sede not found")
     return db_sede
+
+@app.get("/hola")
+async def hello():
+    return "Hola"
