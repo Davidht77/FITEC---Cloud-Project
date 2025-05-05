@@ -3,17 +3,17 @@ import { Schema, Prop, SchemaFactory} from "@nestjs/mongoose";
 
 @Schema()
 export class Client {
-    @Prop({default: randomUUID()})
+    @Prop({default: randomUUID(), index: true})
     id: UUID;
-    @Prop()
+    @Prop( { required: true })
     name : string;
-    @Prop()
+    @Prop({ required: true })
     lastName : string;
-    @Prop()
+    @Prop({ required: true })
     age : number;
-    @Prop()
+    @Prop({ required: true })
     email : string;
-    @Prop()
+    @Prop({ required: true })
     phone : string;
 }
 
