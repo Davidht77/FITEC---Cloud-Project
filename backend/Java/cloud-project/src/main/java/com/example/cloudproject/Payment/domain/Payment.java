@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -27,7 +28,10 @@ public class Payment{
     @EqualsAndHashCode.Exclude // Excluir colección de equals/hashCode
     private Client client;
 
-    private LocalDate date;
 
-    private String paymentType;
+    private double amount;
+
+    private LocalDateTime date;
+
+    private PaymentType paymentType;
 }
