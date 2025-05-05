@@ -1,0 +1,28 @@
+# Carpetas de Python que no deben subirse
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Archivos de entorno virtual
+venv/
+.env
+*.env
+
+# Archivos de log o bases de datos temporales
+*.log
+*.sqlite3
+
+# Archivos de VSCode
+.vscode/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos compilados por Cython
+*.c
+*.so
+
+# Archivos generados por pip
+pip-wheel-metadata/
+*.egg-info/
