@@ -41,7 +41,7 @@ def get_db():
 #Para injecion de dependencias:
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@app.post("/employees/", response_model=EmployeeBase, status_code=status.HTTP_201_CREATED)
+@app.post("/employees", response_model=EmployeeBase, status_code=status.HTTP_201_CREATED)
 async def create_employee(employee: EmployeeBase, db: db_dependency):
     db_employee = models.Employees(**employee.dict())
     db.add(db_employee)
@@ -71,6 +71,7 @@ async def read_sede(sede_id: uuid.UUID, db: db_dependency):
         raise HTTPException(status_code=404, detail="Sede not found")
     return db_sede
 
-@app.get("/hola")
-async def hello():
-    return "Hola"
+@app.get("/sede", response_model=list[Sede])
+async def read_all_sedes(db: db_dependency):
+    db_sedes = db.query(models.Sede).all()
+    return db_sedes

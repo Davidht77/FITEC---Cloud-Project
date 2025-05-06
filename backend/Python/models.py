@@ -19,7 +19,7 @@ class Employees(Base):
     name = Column(String(50))
     lastName = Column(String(50))
     phone = Column(Float)
-    email = Column(String(50))
+    email = Column(String(50), unique=True, index=True)
     password = Column(String(50))
     salary = Column(Float)
 
