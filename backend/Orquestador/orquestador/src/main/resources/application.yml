@@ -1,0 +1,35 @@
+
+
+spring:
+  application:
+    name: orquestador
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: auth-route
+          - uri: ${AUTH_URL:http://localhost:8081}
+          - predicates:
+          - Path=/auth/**
+          - filters:
+          - id: client-route
+            uri: ${SPRING_URL:http://localhost:8082}
+            predicates:
+              - Path=/client/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+          - id: employee-route
+            uri: ${FASTAPI_URL:http://localhost:8000}
+            predicates:
+              - Path=/employee/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+          - id: nosql-route
+            uri: ${NESTJS_URL:http://localhost:3000}
+            predicates:
+              - Path=/faq/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+logging:
+  level:
+    org.springframework.web: DEBUG

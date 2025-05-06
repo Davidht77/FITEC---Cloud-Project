@@ -1,21 +1,32 @@
 from sqlalchemy import Column, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 import uuid
+import enum  # Importamos enum de Python
 from sqlalchemy.types import Uuid # Import Uuid type
 from database import Base
 
+# Definimos el Enum de Python
+class RoleEnum(str, enum.Enum):
+    TRAINER = "Trainer"
+    NUTRICIONIST = "Nutricionist"
+    ADMINISTRATOR = "Administrator"
+
+
 class Employees(Base):
-    __tablename__ = 'clients'
+    __tablename__ = 'employees'
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4(), index=True)
     name = Column(String(50))
     lastName = Column(String(50))
     phone = Column(Float)
-    email = Column(String(50))
+    email = Column(String(50), unique=True, index=True)
+    password = Column(String(50))
     salary = Column(Float)
 
+    role = Column(String(15), default=RoleEnum.TRAINER, nullable=False)
+
     sede_id = Column(Uuid, ForeignKey('sede.id'), nullable=False)
-    sede = relationship("Sede", back_populates="clients")
+    sede = relationship("Sede", back_populates="employees")
 
 
 class Sede(Base):
@@ -26,4 +37,4 @@ class Sede(Base):
     address = Column(String(50))
     phone = Column(String(50))
 
-    clients = relationship("Employees", back_populates="sede", cascade="all, delete-orphan")    
+    employees = relationship("Employees", back_populates="sede", cascade="all, delete-orphan")    

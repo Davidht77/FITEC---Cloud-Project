@@ -9,7 +9,6 @@ public class PlanDto {
 
     private UUID id;
     private String name;
-
     private String description;
     private double price;
 
