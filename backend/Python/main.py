@@ -26,7 +26,7 @@ class EmployeeBase(BaseModel):
     email: str
     password: str
     salary: float | None = None
-    hire_date: datetime | None = None
+    date_contract: datetime | None = None
     role: RoleEnum = RoleEnum.TRAINER
     sede_id: uuid.UUID | None = None
 
@@ -62,6 +62,15 @@ async def read_employee(employee_id: uuid.UUID, db: db_dependency):
         raise HTTPException(status_code=404, detail="Employee not found")
     return db_employee
 
+@app.delete("/employees/{employee_id}", status_code=status.HTTP_200_OK)
+async def delete_employee(employee_id: uuid.UUID, db: db_dependency):
+    db_employee = db.query(models.Employees).filter(models.Employees.id == employee_id).first()
+    if db_employee is None:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    db.delete(db_employee)
+    db.commit()
+    return {"message": "Employee deleted successfully"}
+
 @app.post("/sede/", response_model=SedeBase, status_code=status.HTTP_201_CREATED)
 async def create_sede(sede: SedeBase, db: db_dependency):
     db_sede = models.Sede(**sede.dict())
@@ -77,6 +86,17 @@ async def read_sede(sede_id: uuid.UUID, db: db_dependency):
         raise HTTPException(status_code=404, detail="Sede not found")
     return db_sede
 
+@app.delete("/sede/{sede_id}", status_code=status.HTTP_200_OK)
+async def delete_employee(sede_id: uuid.UUID, db: db_dependency):
+    db_sede = db.query(models.Sede).filter(models.Sede.id == sede_id).first()
+    if db_sede is None:
+        raise HTTPException(status_code=404, detail="Sede not found")
+    db.delete(db_sede)
+    db.commit()
+    return {"message": "Sede deleted successfully"}
+
 @app.get("/hola")
 async def hello():
     return "Hola"
+
+

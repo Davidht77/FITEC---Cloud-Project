@@ -25,7 +25,7 @@ class Employees(Base):
     email = Column(String(50))
     password = Column(String(50))
     salary = Column(Float)
-    hire_date = Column(DateTime, default=datetime.utcnow)
+    date_contract = Column(DateTime, default=datetime.utcnow)
 
     role = Column(String(15), default=RoleEnum.TRAINER, nullable=False)
 
