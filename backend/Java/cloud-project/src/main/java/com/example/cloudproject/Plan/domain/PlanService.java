@@ -17,25 +17,42 @@ public class PlanService {
         this.planRepository = planRepository;
     }
 
-    public List<Plan> getAllPlans() {
-        return planRepository.findAll();
+    private PlanDto mapToDto(Plan plan) {
+        PlanDto dto = new PlanDto();
+        dto.setId(plan.getId());
+        dto.setName(plan.getName());
+        dto.setDescription(plan.getDescription());
+        dto.setPrice(plan.getPrice());
+        return dto;
     }
 
-    public Optional<Plan> getPlanById(UUID id) {
-        return planRepository.findById(id);
+    public List<PlanDto> getAllPlans() {
+        return planRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .toList();
     }
 
-    public Plan createPlan(Plan plan) {
-        return planRepository.save(plan);
+    public Optional<PlanDto> getPlanById(UUID id) {
+        return planRepository.findById(id)
+                .map(this::mapToDto);
     }
 
-    public Plan updatePlan(UUID id, Plan updatedPlan) {
+    public PlanDto createPlan(PlanDto dto) {
+        Plan plan = new Plan();
+        plan.setName(dto.getName());
+        plan.setDescription(dto.getDescription());
+        plan.setPrice(dto.getPrice());
+        return mapToDto(planRepository.save(plan));
+    }
+
+    public PlanDto updatePlan(UUID id, PlanDto updatedDto) {
         return planRepository.findById(id)
                 .map(plan -> {
-                    plan.setName(updatedPlan.getName());
-                    plan.setDescription(updatedPlan.getDescription());
-                    plan.setPrice(updatedPlan.getPrice());
-                    return planRepository.save(plan);
+                    plan.setName(updatedDto.getName());
+                    plan.setDescription(updatedDto.getDescription());
+                    plan.setPrice(updatedDto.getPrice());
+                    return mapToDto(planRepository.save(plan));
                 })
                 .orElseThrow(() -> new RuntimeException("Plan not found with id " + id));
     }
