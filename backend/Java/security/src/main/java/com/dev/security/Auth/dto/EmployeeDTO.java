@@ -4,16 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeDTO {
     private String name;
     private String lastName;
-    private String phoneNumber;
+    private String phone;
     private String email;
-    private String hashedPassword; // Contraseña hasheada
+    private String password; // Contraseña hasheada
     private Double salary;
-    private String dateContract;
+    private UUID sede_id;
     // otros campos...
 }

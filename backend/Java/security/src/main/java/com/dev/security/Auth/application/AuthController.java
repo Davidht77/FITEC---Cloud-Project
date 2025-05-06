@@ -21,14 +21,13 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    ResponseEntity<String> registrarse(@RequestBody RegistrationRequest registerRequest){
-        authService.registerUser(registerRequest);
-        return ResponseEntity.ok("Te Has Registrado Correctamente");
+    Mono<Void> registrarse(@RequestBody RegistrationRequest registerRequest){
+        return authService.registerUser(registerRequest);
     }
 
     @PostMapping("/login")
-    ResponseEntity<Mono<AuthResponse>> logearse(@RequestBody LoginRequest loginRequest){
-        Mono<AuthResponse> token = authService.login(loginRequest);
-        return ResponseEntity.ok(token);
+    Mono<ResponseEntity<AuthResponse>> logearse(@RequestBody LoginRequest loginRequest){
+        return authService.login(loginRequest) // Obtiene Mono<AuthResponse>
+                .map(ResponseEntity::ok);
     }
 }

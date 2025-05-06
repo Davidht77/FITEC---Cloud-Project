@@ -1,34 +1,38 @@
+import datetime
 from fastapi import FastAPI, HTTPException, Depends, status # type: ignore
 from pydantic import BaseModel # type: ignore
-from typing import Annotated # type: ignore
+from typing import Annotated
+
+from sqlalchemy import create_engine, text # type: ignore
 import models
-from database import SessionLocal, engine # type: ignore
+from database import Base, SessionLocal, engine # type: ignore
 from sqlalchemy.orm import Session # type: ignore
 import uuid
 
-# Por ahora funciona. No olvidar seguir los pasos en el Google Docs para correrlo
+models.Base.metadata.create_all(bind=engine)
 
 # Crea una instancia de la aplicación FastAPI
 app = FastAPI()
 
-models.Base.metadata.drop_all(bind=engine) # Borra todas las tablas definidas en Base.metadata
-models.Base.metadata.create_all(bind=engine)  # Crea las tablas en la base de datos
 
 # Define un modelo Pydantic para la validación de datos
 class EmployeeBase(BaseModel):
-    id: uuid.UUID
+    id: uuid.UUID | None = None
     name: str
-    lastName: str | None = None
-    age: int
-    phone: float
-    email: float | None = None
+    lastName: str
+    password: str
+    phone: str
+    email: str
     salary: float | None = None
-    sede_id: uuid.UUID
+    date_of_contract: datetime.datetime | None = None
+    sede_id: uuid.UUID | None = None
 
 class Sede(BaseModel):
     name: str
     address: str | None = None
     phone: str
+
+
 
 # Crea una base de datos de ejemplo
 def get_db():
@@ -56,7 +60,7 @@ async def read_employee(employee_id: uuid.UUID, db: db_dependency):
         raise HTTPException(status_code=404, detail="Employee not found")
     return db_employee
 
-@app.post("/sede/", response_model=Sede, status_code=status.HTTP_201_CREATED)
+@app.post("/sede", response_model=Sede, status_code=status.HTTP_201_CREATED)
 async def create_sede(sede: Sede, db: db_dependency):
     db_sede = models.Sede(**sede.dict())
     db.add(db_sede)

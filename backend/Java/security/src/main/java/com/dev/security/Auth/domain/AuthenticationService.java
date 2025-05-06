@@ -4,6 +4,7 @@ import com.dev.security.Auth.dto.*;
 import com.dev.security.Config.JwtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,7 +40,7 @@ public class AuthenticationService {
             ClientDTO clientData = new ClientDTO(
                     request.getName(),
                     request.getLastName(),
-                    request.getPhoneNumber(),
+                    request.getPhone(),
                     request.getEmail(),
                     hashedPassword // Envía la contraseña ya hasheada
                     // otros campos específicos del cliente...
@@ -47,12 +48,12 @@ public class AuthenticationService {
             // Llama al ClientService
             return webClientBuilder.baseUrl(clientServiceUrl).build()
                     .post()
-                    .uri("/api/clients") // Endpoint en ClientService para crear clientes
+                    .uri("/clients") // Endpoint en ClientService para crear clientes
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(clientData) // El objeto a enviar como JSON
                     .retrieve() // Envía la solicitud y obtén la respuesta
                     .onStatus(
-                            httpStatus -> httpStatus.isError(),
+                            HttpStatusCode::isError,
 
                             // Función de manejo: La misma que teníamos antes
                             response ->
@@ -71,21 +72,21 @@ public class AuthenticationService {
             EmployeeDTO employeeData = new EmployeeDTO(
                     request.getName(),
                     request.getLastName(),
-                    request.getPhoneNumber(),
+                    request.getPhone(),
                     request.getEmail(),
                     hashedPassword, // Envía la contraseña ya hasheada
-                    request.getSalary(), // otros campos específicos del empleado...
-                    request.getDateContract()
+                    request.getSalary(),
+                    request.getSede_id()// otros campos específicos del empleado...
             );
             // Llama al EmployeeService (FastAPI)
             return webClientBuilder.baseUrl(employeeServiceUrl).build()
                     .post()
-                    .uri("/api/employees") // Endpoint en EmployeeService para crear empleados
+                    .uri("/employees") // Endpoint en EmployeeService para crear empleados
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(employeeData)
                     .retrieve()
                     .onStatus(
-                            httpStatus -> httpStatus.isError(),
+                            HttpStatusCode::isError,
 
                             // Función de manejo: La misma que teníamos antes
                             response ->
@@ -131,7 +132,7 @@ public class AuthenticationService {
                 .onStatus(httpStatus -> httpStatus == HttpStatus.NOT_FOUND,
                         clientResponse -> Mono.error(new BadCredentialsException("User not found or invalid credentials")))
                 // Manejo genérico para otros errores
-                .onStatus(httpStatus -> httpStatus.isError(),
+                .onStatus(HttpStatusCode::isError,
 
                         // Función de manejo: La misma que teníamos antes
                         response ->
