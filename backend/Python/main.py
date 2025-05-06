@@ -2,11 +2,10 @@ from fastapi import FastAPI, HTTPException, Depends, status # type: ignore
 from pydantic import BaseModel # type: ignore
 from typing import Annotated # type: ignore
 import models
-from models import RoleEnum
 from database import SessionLocal, engine # type: ignore
 from sqlalchemy.orm import Session # type: ignore
 import uuid
-from datetime import datetime
+from schemas import EmployeeBase, SedeBase
 
 # Por ahora funciona. No olvidar seguir los pasos en el Google Docs para correrlo
 
@@ -15,26 +14,6 @@ app = FastAPI()
 
 models.Base.metadata.drop_all(bind=engine) # Borra todas las tablas definidas en Base.metadata
 models.Base.metadata.create_all(bind=engine)  # Crea las tablas en la base de datos
-
-# Define un modelo Pydantic para la validación de datos
-class EmployeeBase(BaseModel):
-    id: uuid.UUID | None = None # Opcional para que el mismo backend lo genere
-    name: str
-    lastName: str | None = None
-    age: int
-    phone: str
-    email: str
-    password: str
-    salary: float | None = None
-    date_contract: datetime | None = None
-    role: RoleEnum = RoleEnum.TRAINER
-    sede_id: uuid.UUID | None = None
-
-class SedeBase(BaseModel):
-    id: uuid.UUID | None = None # Opcional para que el mismo backend lo genere
-    name: str
-    address: str | None = None
-    phone: str
 
 # Crea una base de datos de ejemplo
 def get_db():
