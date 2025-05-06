@@ -1,7 +1,8 @@
 import datetime
 from fastapi import FastAPI, HTTPException, Depends, status # type: ignore
-from pydantic import BaseModel # type: ignore
-from typing import Annotated
+from pydantic import BaseModel, EmailStr # type: ignore
+from typing import Annotated, List, Optional
+from passlib.context import CryptContext
 
 from sqlalchemy import create_engine, text # type: ignore
 import models
@@ -32,6 +33,17 @@ class Sede(BaseModel):
     address: str | None = None
     phone: str
 
+#Dtos
+class LoginCredentialsRequest(BaseModel):
+    email: EmailStr
+    password: str # Contraseña en texto plano para validar
+    userType: str | None = None # Tipo de usuario (opcional)
+
+class UserValidationResponse(BaseModel): # Respuesta para AuthService
+    userId: uuid.UUID
+    email: EmailStr
+    hashedPassword: str
+    roles: List[str]
 
 
 # Crea una base de datos de ejemplo
@@ -45,6 +57,19 @@ def get_db():
 #Para injecion de dependencias:
 db_dependency = Annotated[Session, Depends(get_db)]
 
+# Configura el contexto de Passlib para usar bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verifica una contraseña en texto plano contra una hasheada."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """Hashea una contraseña en texto plano."""
+    return pwd_context.hash(password)
+
+
+#Endopoints par empleados
 @app.post("/employees", response_model=EmployeeBase, status_code=status.HTTP_201_CREATED)
 async def create_employee(employee: EmployeeBase, db: db_dependency):
     db_employee = models.Employees(**employee.dict())
@@ -60,6 +85,20 @@ async def read_employee(employee_id: uuid.UUID, db: db_dependency):
         raise HTTPException(status_code=404, detail="Employee not found")
     return db_employee
 
+#Endpoints para autenticacion
+@app.post("/employees/credentials", response_model=UserValidationResponse)
+async def login_employee(employee: LoginCredentialsRequest, db: db_dependency):
+    db_employee = db.query(models.Employees).filter(models.Employees.email == employee.email).first()
+    if db_employee is None:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return UserValidationResponse(
+        userId=db_employee.id,
+        email=db_employee.email,
+        hashedPassword=db_employee.password,
+        roles= ["ROLE_EMPLOYEE"]
+    )
+
+#Endpoints para sedes
 @app.post("/sede", response_model=Sede, status_code=status.HTTP_201_CREATED)
 async def create_sede(sede: Sede, db: db_dependency):
     db_sede = models.Sede(**sede.dict())
