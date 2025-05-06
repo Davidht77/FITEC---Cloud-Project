@@ -4,6 +4,8 @@ import uuid
 import enum  # Importamos enum de Python
 from sqlalchemy.types import Uuid # Import Uuid type
 from database import Base
+from sqlalchemy import Column, DateTime
+from datetime import datetime
 
 # Definimos el Enum de Python
 class RoleEnum(str, enum.Enum):
@@ -18,10 +20,12 @@ class Employees(Base):
     id = Column(Uuid, primary_key=True, default=uuid.uuid4(), index=True)
     name = Column(String(50))
     lastName = Column(String(50))
-    phone = Column(Float)
+    age = Column(Float)
+    phone = Column(String(20))
     email = Column(String(50))
     password = Column(String(50))
     salary = Column(Float)
+    hire_date = Column(DateTime, default=datetime.utcnow)
 
     role = Column(String(15), default=RoleEnum.TRAINER, nullable=False)
 
