@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: orquestador
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          # Ruta 1: Auth Service
+          - id: auth-route
+            uri: ${AUTH_URL:http://localhost:8081}   # Indentado bajo el objeto de ruta
+            predicates:                             # Indentado bajo el objeto de ruta
+              - Path=/auth/**                       # Elemento de lista bajo predicates
+            # filters:                              # Opcional: Añade filtros si los necesitas aquí
+            #   - ...
+
+          # Ruta 2: Client Service
+          - id: client-route
+            uri: ${SPRING_URL:http://localhost:8082}
+            predicates:
+              - Path=/client/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service # Elemento de lista bajo filters
+
+          # Ruta 3: Employee Service
+          - id: employee-route
+            uri: ${FASTAPI_URL:http://localhost:8000}
+            predicates:
+              - Path=/employee/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+
+          # Ruta 4: NoSQL Service (FAQ)
+          - id: nosql-route
+            uri: ${NESTJS_URL:http://localhost:3000}
+            predicates:
+              - Path=/faq/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+
+logging:
+  level:
+    # Cambia a DEBUG o TRACE para más detalles si sigues teniendo problemas
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG # Ya lo tenías

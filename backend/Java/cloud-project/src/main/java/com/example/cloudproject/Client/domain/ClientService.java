@@ -55,6 +55,7 @@ public class ClientService {
         clientDto.setPlan(planDto);
         clientDto.setId(client.getId());
 
+
         return clientDto;
     }
 
@@ -87,6 +88,7 @@ public class ClientService {
         client.setEmail(clientDto.getEmail());
         client.setPhone(clientDto.getPhone());
         client.setPlan(plan);
+        client.setPassword(clientDto.getPassword());
 
 
         clientRepository.save(client);
@@ -101,6 +103,7 @@ public class ClientService {
                     client.setEmail(clientRequestDto.getEmail());
                     client.setPhone(clientRequestDto.getPhone());
                     client.setAddress(clientRequestDto.getAddress());
+                    client.setPassword(clientRequestDto.getPassword());
 
                     // Obtener el plan por ID
                     Plan plan = planRepository.findById(clientRequestDto.getPlanId())

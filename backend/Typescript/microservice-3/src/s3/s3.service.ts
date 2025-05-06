@@ -1,5 +1,6 @@
 // src/s3/s3.service.ts
-import { Injectable } from '@nestjs/common';
+/// <reference types="multer" />
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   S3Client, // Para la configuración del cliente
@@ -15,13 +16,24 @@ import * as path from 'path'; // Para manejar rutas de archivo
 @Injectable()
 export class S3Service {
   private s3Client: S3Client;
-  private readonly bucketName: string;
-  private readonly region: string;
+  private bucketName!: string;
+  private region!: string;
 
   constructor(private configService: ConfigService) {
-    this.region = this.configService.get<string>('AWS_REGION');
-    this.bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
+    const region = this.configService.get<string>('AWS_REGION');
+    const bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
 
+    if (!region) {
+      throw new InternalServerErrorException('AWS_REGION environment variable is not set.');
+    }
+    if (!bucketName) {
+        throw new InternalServerErrorException('AWS_S3_BUCKET_NAME environment variable is not set.');
+    }
+
+    // Ahora que hemos verificado que no son undefined, podemos asignarlas.
+    this.region = region;
+    this.bucketName = bucketName;
+    
     // El SDK buscará credenciales automáticamente si se usa IAM Role en AWS
     // Si no usas Roles, configuraría credentials aquí o usaría variables de entorno
     this.s3Client = new S3Client({

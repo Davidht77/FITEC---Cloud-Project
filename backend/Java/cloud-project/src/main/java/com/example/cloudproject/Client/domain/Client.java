@@ -71,6 +71,7 @@ public class Client{
     private String phone;
 
     private String address;
+    private String password;
 
     @ManyToOne(fetch = FetchType.LAZY) // Relación Many-to-One con Plan
     @JoinColumn(name = "id_plan", nullable = false)
