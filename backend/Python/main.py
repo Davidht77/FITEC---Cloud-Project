@@ -5,7 +5,7 @@ import models
 from database import SessionLocal, engine # type: ignore
 from sqlalchemy.orm import Session # type: ignore
 import uuid
-from schemas import EmployeeBase, SedeBase
+from schemas import EmployeeCreate, EmployeeResponse, SedeCreate, SedeResponse
 
 # Por ahora funciona. No olvidar seguir los pasos en el Google Docs para correrlo
 
@@ -26,15 +26,15 @@ def get_db():
 #Para injecion de dependencias:
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@app.post("/employees/", response_model=EmployeeBase, status_code=status.HTTP_201_CREATED)
-async def create_employee(employee: EmployeeBase, db: db_dependency):
+@app.post("/employees/", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
+async def create_employee(employee: EmployeeCreate, db: db_dependency):
     db_employee = models.Employees(**employee.dict())
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
     return db_employee
 
-@app.get("/employees/{employee_id}", response_model=EmployeeBase)
+@app.get("/employees/{employee_id}", response_model=EmployeeResponse)
 async def read_employee(employee_id: uuid.UUID, db: db_dependency):
     db_employee = db.query(models.Employees).filter(models.Employees.id == employee_id).first()
     if db_employee is None:
@@ -50,15 +50,15 @@ async def delete_employee(employee_id: uuid.UUID, db: db_dependency):
     db.commit()
     return {"message": "Employee deleted successfully"}
 
-@app.post("/sede/", response_model=SedeBase, status_code=status.HTTP_201_CREATED)
-async def create_sede(sede: SedeBase, db: db_dependency):
+@app.post("/sede/", response_model=SedeResponse, status_code=status.HTTP_201_CREATED)
+async def create_sede(sede: SedeCreate, db: db_dependency):
     db_sede = models.Sede(**sede.dict())
     db.add(db_sede)
     db.commit()
     db.refresh(db_sede)
     return db_sede
 
-@app.get("/sede/{sede_id}", response_model=SedeBase)
+@app.get("/sede/{sede_id}", response_model=SedeResponse)
 async def read_sede(sede_id: uuid.UUID, db: db_dependency):
     db_sede = db.query(models.Sede).filter(models.Sede.id == sede_id).first()
     if db_sede is None:

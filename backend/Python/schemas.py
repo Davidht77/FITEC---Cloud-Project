@@ -4,8 +4,7 @@ import uuid
 from datetime import datetime
 
 # Define un modelo Pydantic para la validación de datos
-class EmployeeBase(BaseModel):
-    id: uuid.UUID | None = None # Opcional para que el mismo backend lo genere
+class EmployeeCreate(BaseModel):
     name: str
     lastName: str | None = None
     age: int
@@ -13,12 +12,32 @@ class EmployeeBase(BaseModel):
     email: str
     password: str
     salary: float | None = None
-    date_contract: datetime | None = None
     role: RoleEnum = RoleEnum.TRAINER
-    sede_id: uuid.UUID | None = None
+    sede_id: uuid.UUID
 
-class SedeBase(BaseModel):
-    id: uuid.UUID | None = None # Opcional para que el mismo backend lo genere
+# Modelo de respuesta (incluye campos generados como id y fecha de contrato)
+class EmployeeResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    lastName: str | None = None
+    age: int
+    phone: str
+    email: str
+    salary: float | None = None
+    role: RoleEnum = RoleEnum.TRAINER
+    sede_id: uuid.UUID
+    date_contract: datetime
+
+    class Config:
+        orm_mode = True
+
+class SedeCreate(BaseModel):
     name: str
     address: str | None = None
     phone: str
+
+class SedeResponse(SedeCreate):
+    id: uuid.UUID
+
+    class Config:
+        orm_mode = True
