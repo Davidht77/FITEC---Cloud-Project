@@ -12,6 +12,6 @@ public class ClientDTO {
     private String lastName;
     private String phoneNumber;
     private String email;
-    private String hashedPassword; // Contraseña hasheada
+    private String password; // Contraseña hasheada
     // otros campos...
 }

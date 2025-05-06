@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Float, ForeignKey
+from datetime import datetime
+from sqlalchemy import Column, DateTime, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 import uuid
 import enum  # Importamos enum de Python
@@ -18,10 +19,11 @@ class Employees(Base):
     id = Column(Uuid, primary_key=True, default=uuid.uuid4(), index=True)
     name = Column(String(50))
     lastName = Column(String(50))
-    phone = Column(Float)
+    phone = Column(String(20))
     email = Column(String(50), unique=True, index=True)
-    password = Column(String(50))
+    password = Column(String(72))
     salary = Column(Float)
+    date_of_contract = Column(DateTime, default=datetime.utcnow)
 
     role = Column(String(15), default=RoleEnum.TRAINER, nullable=False)
 
