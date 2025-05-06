@@ -114,19 +114,20 @@ public class AuthenticationService {
         String targetUri;
         if ("client".equalsIgnoreCase(request.getUserType())) {
             targetServiceUrl = clientServiceUrl;
-            targetUri = "/api/clients/credentials/" + request.getEmail(); // Endpoint para obtener credenciales por email
+            targetUri = "/client/credentials"; // Endpoint para obtener credenciales por email
         } else if ("employee".equalsIgnoreCase(request.getUserType())) {
             targetServiceUrl = employeeServiceUrl;
-            targetUri = "/api/employees/credentials/" + request.getEmail(); // Endpoint similar en EmployeeService
+            targetUri = "/employees/credentials"; // Endpoint similar en EmployeeService
         } else {
             return Mono.error(new IllegalArgumentException("Invalid user type"));
         }
 
         // Llama al servicio correspondiente para obtener las credenciales
         return webClientBuilder.baseUrl(targetServiceUrl).build()
-                .get()
+                .post()
                 .uri(targetUri)
                 .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
                 .retrieve()
                 // Manejo específico para 404 Not Found
                 .onStatus(httpStatus -> httpStatus == HttpStatus.NOT_FOUND,

@@ -1,3 +1,15 @@
+<<<<<<< HEAD
+package com.example.cloudproject.Payment.application;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/payment")
+public class PaymentController {
+
+}
+=======
 package com.example.cloudproject.Payment.application;
 
 import com.example.cloudproject.Payment.domain.*;
@@ -43,3 +55,4 @@ public class PaymentController {
 
 
 }
+>>>>>>> e89bb9713ec89be9d22a9e827a80c2545fceff7d

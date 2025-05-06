@@ -5,7 +5,7 @@ import Link from "next/link"
 
 export default function Home() {
   return (
-    <div>
+    <div style={{ viewTransitionName: 'page-content' }}>
       {/* Hero Section */}
       <section
         className="relative w-full h-[80vh] justify-center px-4 py-16 md:py-24 flex flex-col items-center bg-fixed bg-center bg-cover"
@@ -140,6 +140,7 @@ export default function Home() {
                 <Link
                   href="/programas"
                   className="text-yellow-400 text-sm flex items-center gap-1 group-hover:gap-2 transition-all"
+                  style={{ viewTransitionName: `program-image-${program.title}` }}
                 >
                   Ver detalles <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -150,7 +151,7 @@ export default function Home() {
 
         <div className="text-center mt-10">
           <Button asChild className="bg-yellow-400 hover:bg-yellow-500 text-sky-900 font-medium">
-            <Link href="/programas">Ver todos los programas</Link>
+            <Link href="/programas" style={{ viewTransitionName: `program-images` }}>Ver todos los programas </Link>
           </Button>
         </div>
       </section>

@@ -1,3 +1,14 @@
+<<<<<<< HEAD
+package com.example.cloudproject.Plan.application;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/plan")
+public class PlanController {
+}
+=======
 package com.example.cloudproject.Plan.application;
 
 import com.example.cloudproject.Plan.domain.Plan;
@@ -54,3 +65,4 @@ public class PlanController {
     }
 }
 
+>>>>>>> e89bb9713ec89be9d22a9e827a80c2545fceff7d

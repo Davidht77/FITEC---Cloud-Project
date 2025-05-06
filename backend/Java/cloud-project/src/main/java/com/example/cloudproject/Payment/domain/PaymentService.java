@@ -1,3 +1,16 @@
+<<<<<<< HEAD
+package com.example.cloudproject.Payment.domain;
+
+import com.example.cloudproject.Payment.infrastructure.PaymentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class PaymentService {
+    @Autowired
+    private PaymentRepository paymentRepository;
+}
+=======
 package com.example.cloudproject.Payment.domain;
 
 import com.example.cloudproject.Client.domain.Client;
@@ -99,3 +112,4 @@ public class PaymentService {
 
 
 }
+>>>>>>> e89bb9713ec89be9d22a9e827a80c2545fceff7d
