@@ -42,13 +42,13 @@ public class AuthenticationService {
                     request.getLastName(),
                     request.getPhone(),
                     request.getEmail(),
-                    hashedPassword // Envía la contraseña ya hasheada
-                    // otros campos específicos del cliente...
+                    hashedPassword, // Envía la contraseña ya hasheada
+                    request.getPlanId()
             );
             // Llama al ClientService
             return webClientBuilder.baseUrl(clientServiceUrl).build()
                     .post()
-                    .uri("/clients") // Endpoint en ClientService para crear clientes
+                    .uri("/client") // Endpoint en ClientService para crear clientes
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(clientData) // El objeto a enviar como JSON
                     .retrieve() // Envía la solicitud y obtén la respuesta

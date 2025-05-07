@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-package com.example.cloudproject.Plan.domain;
-
-import com.example.cloudproject.Plan.infrastructure.PlanRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-@Service
-public class PlanService {
-    @Autowired
-    private PlanRepository planRepository;
-}
-=======
 package com.example.cloudproject.Plan.domain;
 
 import com.example.cloudproject.Plan.infrastructure.PlanRepository;
@@ -32,7 +19,6 @@ public class PlanService {
 
     private PlanDto mapToDto(Plan plan) {
         PlanDto dto = new PlanDto();
-        dto.setId(plan.getId());
         dto.setName(plan.getName());
         dto.setDescription(plan.getDescription());
         dto.setPrice(plan.getPrice());
@@ -75,4 +61,3 @@ public class PlanService {
     }
 
 }
->>>>>>> e89bb9713ec89be9d22a9e827a80c2545fceff7d

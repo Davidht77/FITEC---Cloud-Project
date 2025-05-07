@@ -43,7 +43,7 @@ public class JwtService {
         return JWT.create()
                 .withSubject(email)
                 .withClaim("id",String.valueOf(id))
-                .withArrayClaim("roles", new String[] {"ROLE_USER"})
+                .withArrayClaim("roles", roles.toArray(new String[0]))
                 .withIssuedAt(now)
                 .withExpiresAt(expiration)
                 .sign(algorithm);

@@ -57,18 +57,6 @@ def get_db():
 #Para injecion de dependencias:
 db_dependency = Annotated[Session, Depends(get_db)]
 
-# Configura el contexto de Passlib para usar bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifica una contraseña en texto plano contra una hasheada."""
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password: str) -> str:
-    """Hashea una contraseña en texto plano."""
-    return pwd_context.hash(password)
-
-
 #Endopoints par empleados
 @app.post("/employees", response_model=EmployeeBase, status_code=status.HTTP_201_CREATED)
 async def create_employee(employee: EmployeeBase, db: db_dependency):
