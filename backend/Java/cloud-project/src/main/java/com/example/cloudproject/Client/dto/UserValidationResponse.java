@@ -1,22 +1,19 @@
 package com.example.cloudproject.Client.dto;
 
-
-import com.example.cloudproject.Plan.domain.PlanDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClientRequestDto {
-    private String name;
-    private String lastName;
+public class UserValidationResponse {
+    private UUID userID;
     private String email;
-    private String phone;
-    private String password;
-    private UUID planId;
-
+    private String hashedPassword;
+    private List<String> roles = new ArrayList<>();
 }

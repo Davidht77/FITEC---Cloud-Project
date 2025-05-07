@@ -1,30 +1,3 @@
-<<<<<<< HEAD
-package com.example.cloudproject.Plan.domain;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.*;
-import lombok.Data;
-
-import java.util.UUID;
-
-@Data
-@Entity
-@Table(name = "plan")
-public class Plan {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    private String name;
-
-    private String description;
-
-    private double price;
-}
-=======
 package com.example.cloudproject.Plan.domain;
 
 import com.example.cloudproject.Client.domain.Client;
@@ -48,6 +21,7 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(unique = true)
     private String name;
 
     private String description;
@@ -60,4 +34,3 @@ public class Plan {
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
 }
->>>>>>> e89bb9713ec89be9d22a9e827a80c2545fceff7d

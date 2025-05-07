@@ -1,36 +1,67 @@
+jwt:
+  secret: AYlvhZBK/45ggInq5cb2Kz/eKeUopeGUxiUlk0WTZbue8w+jiCoz0MGsvO06bg94k/RNYLhzN6qTgWdV7UfL8Q==
+
 spring:
   application:
     name: orquestador
   cloud:
     gateway:
+      httpclient:
+        # Intenta deshabilitar la expectativa de "100-continue" que a veces causa problemas con cuerpos POST
+        expect-continue-enabled: false
+
       mvc:
         routes:
           # Ruta 1: Auth Service
-          - id: auth-route
-            uri: ${AUTH_URL:http://localhost:8081}   # Indentado bajo el objeto de ruta
-            predicates:                             # Indentado bajo el objeto de ruta
-              - Path=/auth/**                       # Elemento de lista bajo predicates
-            # filters:                              # Opcional: Añade filtros si los necesitas aquí
-            #   - ...
+          - id: auth-service-route # ID único
+            uri: ${AUTH_URL:http://localhost:8081}
+            predicates:
+              - Path=/auth/**
+            # No hay filtros definidos para auth-route, lo cual está bien si no los necesitas.
 
           # Ruta 2: Client Service
-          - id: client-route
-            uri: ${SPRING_URL:http://localhost:8082}
+          - id: client-service-route # ID único
+            uri: ${SPRINGBOOT_URL:http://localhost:8082}
             predicates:
               - Path=/client/**
             filters:
-              - AddResponseHeader=X-Powered-By, FITEC Gateway Service # Elemento de lista bajo filters
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
 
-          # Ruta 3: Employee Service
-          - id: employee-route
-            uri: ${FASTAPI_URL:http://localhost:8000}
+          # Ruta 3: Payment Service
+          - id: payment-service-route # ID único
+            uri: ${SPRINGBOOT_URL:http://localhost:8082} # Asumiendo que es el mismo servicio que client
             predicates:
-              - Path=/employee/**
+              - Path=/payment/**
             filters:
               - AddResponseHeader=X-Powered-By, FITEC Gateway Service
 
-          # Ruta 4: NoSQL Service (FAQ)
-          - id: nosql-route
+          # Ruta 4: Plan Service
+          - id: plan-service-route # ID único
+            uri: ${SPRINGBOOT_URL:http://localhost:8082} # Asumiendo que es el mismo servicio que client
+            predicates:
+              - Path=/plan/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+
+          # Ruta 5: Employee Service (para /employees/**)
+          - id: employee-service-employees-route # ID único y descriptivo
+            uri: ${FASTAPI_URL:http://localhost:8000}
+            predicates:
+              - Path=/employees/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+
+          # Ruta 6: Sede Service (para /sede/**, apuntando al mismo FastAPI)
+          - id: employee-service-sede-route # ID único y descriptivo (asumiendo que /sede también va a FastAPI)
+            uri: ${FASTAPI_URL:http://localhost:8000}
+            predicates:
+              - Path=/sede/** # Cambiado a /sede/** para incluir sub-rutas
+
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+
+          # Ruta 7: NoSQL Service (FAQ)
+          - id: nosql-service-route # ID único
             uri: ${NESTJS_URL:http://localhost:3000}
             predicates:
               - Path=/faq/**
@@ -39,6 +70,12 @@ spring:
 
 logging:
   level:
-    # Cambia a DEBUG o TRACE para más detalles si sigues teniendo problemas
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.web: DEBUG # Ya lo tenías
+    # Niveles de logging que ya tenías (buenos para empezar)
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2.server.resource: TRACE
+    org.springframework.web.filter.CompositeFilter: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.cloud.gateway.server.mvc: DEBUG # O TRACE para más detalle del Gateway
+
+    org.springframework.http.client: TRACE
+

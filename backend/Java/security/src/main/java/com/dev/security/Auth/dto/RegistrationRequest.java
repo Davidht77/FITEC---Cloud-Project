@@ -18,5 +18,7 @@ public class RegistrationRequest {
     private String userType; // "client" o "employee"
     // otros campos...
     private Double salary;
+
+    protected UUID planId;
     private UUID sede_id;
 }
