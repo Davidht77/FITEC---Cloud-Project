@@ -4,7 +4,7 @@ import models
 from database import SessionLocal, engine # type: ignore
 from sqlalchemy.orm import Session # type: ignore
 import uuid
-from schemas import EmployeeCreate, EmployeeResponse, EmployeeUpdate, SedeCreate, SedeResponse, SedeUpdate
+from schemas import EmployeeCreate, EmployeeResponse, EmployeeUpdate, LoginCredentialsRequest, SedeCreate, SedeResponse, SedeUpdate, UserValidationResponse
 
 # Por ahora funciona. No olvidar seguir los pasos en el Google Docs para correrlo
 
@@ -25,6 +25,7 @@ def get_db():
 #Para inyeccion de dependencias:
 db_dependency = Annotated[Session, Depends(get_db)]
 
+#################### employee
 @app.post("/employees", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
 async def create_employee(employee: EmployeeCreate, db: db_dependency):
     db_employee = models.Employees(**employee.dict(exclude_unset=True))
@@ -80,6 +81,21 @@ async def delete_employee(employee_id: uuid.UUID, db: db_dependency):
     db.delete(db_employee)
     db.commit()
     return {"message": "Employee deleted successfully"}
+
+############################ AUTH ############
+#Endpoints para autenticacion
+@app.post("/employees/credentials", response_model=UserValidationResponse)
+async def login_employee(employee: LoginCredentialsRequest, db: db_dependency):
+    db_employee = db.query(models.Employees).filter(models.Employees.email == employee.email).first()
+    if db_employee is None:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return UserValidationResponse(
+        userId=db_employee.id,
+        email=db_employee.email,
+        hashedPassword=db_employee.password,
+        roles= ["ROLE_EMPLOYEE"]
+    )
+
 
 ######################################## SEDE ##########################################
 

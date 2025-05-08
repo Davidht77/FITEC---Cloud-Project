@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Float, ForeignKey
+from datetime import datetime
+from sqlalchemy import Column, DateTime, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 import uuid
 import enum  # Importamos enum de Python
@@ -24,12 +25,13 @@ class Employees(Base):
     phone = Column(String(20))
     email = Column(String(50))
     password = Column(String(50))
+    imagenUrlKey = Column(String(100))
     salary = Column(Float)
-    date_contract = Column(DateTime, default=datetime.utcnow)
+    dateContract = Column(DateTime, default=datetime.utcnow)
 
     role = Column(String(15), default=RoleEnum.TRAINER, nullable=False)
 
-    sede_id = Column(Uuid, ForeignKey('sede.id'), nullable=False)
+    sedeId = Column(Uuid, ForeignKey('sede.id'), nullable=False)
     sede = relationship("Sede", back_populates="employees")
 
 
@@ -40,5 +42,6 @@ class Sede(Base):
     name = Column(String(50))
     address = Column(String(50))
     phone = Column(String(50))
+    imagenUrlKey = Column(String(100))
 
     employees = relationship("Employees", back_populates="sede", cascade="all, delete-orphan")    
