@@ -28,7 +28,6 @@ public class Payment{
     @EqualsAndHashCode.Exclude // Excluir colección de equals/hashCode
     private Client client;
 
-
     private double amount;
 
     private LocalDateTime date;

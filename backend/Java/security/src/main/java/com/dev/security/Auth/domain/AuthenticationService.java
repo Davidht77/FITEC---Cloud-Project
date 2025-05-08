@@ -40,6 +40,7 @@ public class AuthenticationService {
             ClientDTO clientData = new ClientDTO(
                     request.getName(),
                     request.getLastName(),
+                    request.getAge(),
                     request.getPhone(),
                     request.getEmail(),
                     hashedPassword, // Envía la contraseña ya hasheada
@@ -72,10 +73,11 @@ public class AuthenticationService {
             EmployeeDTO employeeData = new EmployeeDTO(
                     request.getName(),
                     request.getLastName(),
+                    request.getAge(),
                     request.getPhone(),
                     request.getEmail(),
                     hashedPassword, // Envía la contraseña ya hasheada
-                    request.getSede_id()// otros campos específicos del empleado...
+                    request.getSedeId()// otros campos específicos del empleado...
             );
             // Llama al EmployeeService (FastAPI)
             return webClientBuilder.baseUrl(employeeServiceUrl).build()

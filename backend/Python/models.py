@@ -26,7 +26,7 @@ class Employees(Base):
     age = Column(Float)
     phone = Column(String(20))
     email = Column(String(50))
-    password = Column(String(50))
+    password = Column(String(72))
     imagenUrlKey = Column(String(100))
     salary = Column(Float)
     dateContract = Column(DateTime, default=datetime.utcnow)

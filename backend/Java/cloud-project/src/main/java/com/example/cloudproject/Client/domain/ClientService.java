@@ -73,10 +73,11 @@ public class ClientService {
         Client client = new Client();
         client.setName(clientDto.getName());
         client.setLastName(clientDto.getLastName());
+        client.setAge(clientDto.getAge());
         client.setEmail(clientDto.getEmail());
         client.setPhone(clientDto.getPhone());
-        client.setPlan(plan);
         client.setPassword(clientDto.getPassword());
+        client.setPlan(plan);
 
 
         clientRepository.save(client);
@@ -86,11 +87,25 @@ public class ClientService {
     public ClientResponseDto updateClient(UUID id, ClientRequestDto clientRequestDto) {
         return clientRepository.findById(id)
                 .map(client -> {
-                    client.setName(clientRequestDto.getName());
-                    client.setLastName(clientRequestDto.getLastName());
-                    client.setEmail(clientRequestDto.getEmail());
-                    client.setPhone(clientRequestDto.getPhone());
-                    client.setPassword(clientRequestDto.getPassword());
+                    if (clientRequestDto.getName() != null) {
+                        client.setName(clientRequestDto.getName());
+                    }
+                    if (clientRequestDto.getLastName() != null) {
+                        client.setLastName(clientRequestDto.getLastName());
+                    }
+                    if (clientRequestDto.getAge() != null) {
+                        client.setAge(clientRequestDto.getAge());
+                    }
+                    if (clientRequestDto.getEmail() != null) {
+                        client.setEmail(clientRequestDto.getEmail());
+                    }
+                    if (clientRequestDto.getPhone() != null) {
+                        client.setPhone(clientRequestDto.getPhone());
+                    }
+                    if (clientRequestDto.getImagenUrlKey() != null) {
+                        client.setImagenUrlKey(clientRequestDto.getImagenUrlKey());
+                    }
+
 
                     // Obtener el plan por ID
                     Plan plan = planRepository.findById(clientRequestDto.getPlanId())
