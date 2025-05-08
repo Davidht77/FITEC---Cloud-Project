@@ -22,6 +22,7 @@ public class PlanService {
         dto.setName(plan.getName());
         dto.setDescription(plan.getDescription());
         dto.setPrice(plan.getPrice());
+        dto.setImagenUrlKey(plan.getImagenUrlKey());
         return dto;
     }
 
@@ -48,9 +49,15 @@ public class PlanService {
     public PlanDto updatePlan(UUID id, PlanDto updatedDto) {
         return planRepository.findById(id)
                 .map(plan -> {
-                    plan.setName(updatedDto.getName());
-                    plan.setDescription(updatedDto.getDescription());
-                    plan.setPrice(updatedDto.getPrice());
+                    if (updatedDto.getName() != null)
+                        plan.setName(updatedDto.getName());
+                    if (updatedDto.getDescription() != null)
+                        plan.setDescription(updatedDto.getDescription());
+                    if (updatedDto.getPrice() != null)
+                        plan.setPrice(updatedDto.getPrice());
+                    if (updatedDto.getImagenUrlKey() != null)
+                        plan.setImagenUrlKey(updatedDto.getImagenUrlKey());
+
                     return mapToDto(planRepository.save(plan));
                 })
                 .orElseThrow(() -> new RuntimeException("Plan not found with id " + id));

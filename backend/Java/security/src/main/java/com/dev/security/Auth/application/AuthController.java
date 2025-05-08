@@ -4,6 +4,7 @@ import com.dev.security.Auth.domain.AuthenticationService;
 import com.dev.security.Auth.dto.AuthResponse;
 import com.dev.security.Auth.dto.LoginRequest;
 import com.dev.security.Auth.dto.RegistrationRequest;
+import com.dev.security.Invitation.dto.RegisterEmployeeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,9 +21,14 @@ public class AuthController {
     private AuthenticationService authService;
 
 
-    @PostMapping("/register")
-    Mono<Void> registrarse(@RequestBody RegistrationRequest registerRequest){
+    @PostMapping("/register/client")
+    Mono<Void> registrarse1(@RequestBody RegistrationRequest registerRequest){
         return authService.registerUser(registerRequest);
+    }
+
+    @PostMapping("/register/employee")
+    Mono<Void> registrarse2(@RequestBody RegisterEmployeeRequest registerRequest){
+        return authService.registerEmployee(registerRequest);
     }
 
     @PostMapping("/login")

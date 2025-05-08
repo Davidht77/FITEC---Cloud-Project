@@ -2,6 +2,7 @@ package com.dev.security.Auth.domain;
 
 import com.dev.security.Auth.dto.*;
 import com.dev.security.Config.JwtService;
+import com.dev.security.Invitation.dto.RegisterEmployeeRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -19,6 +20,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final String clientServiceUrl;
     private final String employeeServiceUrl;
+    private final JwtService jwtTokenProvider;
 
     public AuthenticationService(
             WebClient.Builder webClientBuilder,
@@ -36,7 +38,6 @@ public class AuthenticationService {
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
         // Determina a qué servicio llamar
-        if ("client".equalsIgnoreCase(request.getUserType())) {
             ClientDTO clientData = new ClientDTO(
                     request.getName(),
                     request.getLastName(),
@@ -69,8 +70,13 @@ public class AuthenticationService {
                     .toBodilessEntity() // No necesitamos el cuerpo de la respuesta, solo el éxito
                     .then(); // Convierte a Mono<Void> para indicar finalización
 
-        } else if ("employee".equalsIgnoreCase(request.getUserType())) {
-            EmployeeDTO employeeData = new EmployeeDTO(
+
+    }
+
+    public Mono<Void> registerEmployee(RegisterEmployeeRequest request) {
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
+        EmployeeDTO employeeData = new EmployeeDTO(
                     request.getName(),
                     request.getLastName(),
                     request.getAge(),
@@ -101,13 +107,9 @@ public class AuthenticationService {
                     )
                     .toBodilessEntity()
                     .then();
-        } else {
-            return Mono.error(new IllegalArgumentException("Invalid user type"));
-        }
+
     }
 
-
-    private final JwtService jwtTokenProvider;
 
     public Mono<AuthResponse> login(LoginRequest request) {
         // Determina a qué servicio preguntar (usando el userType del request)

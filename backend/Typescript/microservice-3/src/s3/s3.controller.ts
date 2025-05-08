@@ -61,7 +61,8 @@ export class S3Controller {
       s3Url: uploadResult.url,
       // Puedes devolver el objeto actualizado del usuario o solo los detalles de S3
     };
-}   
+}
+
 // Puedes añadir rutas para eliminar archivos, o para generar URLs firmadas
    @Delete('/file/*key')
    async deleteFile(@Param('key') key: string) {
