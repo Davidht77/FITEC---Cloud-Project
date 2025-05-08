@@ -12,11 +12,12 @@ import java.util.UUID;
 public class RegistrationRequest {
     private String name;
     private String lastName;
+    private Integer age;
     private String phone;
     private String email;
     private String password; // Contraseña en texto plano
     private String userType; // "client" o "employee"
     // otros campos...
     protected UUID planId; // puede ser null
-    private UUID sede_id; //puede ser null
+    private UUID sedeId; //puede ser null
 }

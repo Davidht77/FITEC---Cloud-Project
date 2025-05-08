@@ -12,20 +12,22 @@ import java.util.UUID;
 public class EmployeeDTO {
     private String name;
     private String lastName;
+    private Integer age;
     private String phone;
     private String email;
     private String password;// Contraseña hasheada
 
     private Double salary;
-    private UUID sede_id;
+    private UUID sedeId;
     // otros campos...
 
-    public EmployeeDTO(String name, String lastName, String phone, String email, String password, UUID sede_id) {
+    public EmployeeDTO(String name, String lastName, Integer age,String phone, String email, String password, UUID sede_id) {
         this.name = name;
         this.lastName = lastName;
+        this.age = age;
         this.phone = phone;
         this.email = email;
         this.password = password;
-        this.sede_id = sede_id;
+        this.sedeId = sede_id;
     }
 }

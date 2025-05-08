@@ -15,7 +15,7 @@ import java.util.UUID;
 @Table(name = "cliente")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Client{
+public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -25,12 +25,16 @@ public class Client{
 
     private String lastName;
 
+    private Integer age;
+
     @Column(unique = true)
     private String email;
 
     private String phone;
 
     private String password;
+
+    private String imagenUrlKey;
 
     @ManyToOne(fetch = FetchType.LAZY) // Relación Many-to-One con Plan
     @JoinColumn(name = "id_plan", nullable = false)
