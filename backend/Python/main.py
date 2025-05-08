@@ -25,7 +25,7 @@ def get_db():
 #Para inyeccion de dependencias:
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@app.post("/employees/", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
+@app.post("/employees", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
 async def create_employee(employee: EmployeeCreate, db: db_dependency):
     db_employee = models.Employees(**employee.dict(exclude_unset=True))
     db.add(db_employee)
@@ -40,14 +40,23 @@ async def read_employee(employee_id: uuid.UUID, db: db_dependency):
         raise HTTPException(status_code=404, detail="Employee not found")
     return db_employee
 
-@app.get("/sede/{sede_id}/employees", response_model=list[EmployeeResponse])
-async def get_employees_by_sede_id(sede_id: uuid.UUID, db: db_dependency):
-    sede = db.query(models.Sede).filter(models.Sede.id == sede_id).first()
-    if sede is None:
+@app.get("/employees", response_model=list[EmployeeResponse])
+async def get_all_employees(db: db_dependency):
+    db_employees = db.query(models.Employees).all()
+    return db_employees
+
+@app.get("/employees/{employee_id}/sede", response_model=SedeResponse)
+async def get_sede_by_employee_id(employee_id: uuid.UUID, db: db_dependency):
+    db_employee = db.query(models.Employees).filter(models.Employees.id == employee_id).first()
+
+    if db_employee is None:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    db_sede = db_employee.sede
+    if db_sede is None:
         raise HTTPException(status_code=404, detail="Sede not found")
 
-    employees = db.query(models.Employees).filter(models.Employees.sede_id == sede_id).all()
-    return employees
+    return db_sede
 
 @app.put("/employees/{employee_id}", response_model=EmployeeResponse)
 async def update_employee(employee_id: uuid.UUID, updated_data: EmployeeUpdate, db: db_dependency):
@@ -74,7 +83,7 @@ async def delete_employee(employee_id: uuid.UUID, db: db_dependency):
 
 ######################################## SEDE ##########################################
 
-@app.post("/sede/", response_model=SedeResponse, status_code=status.HTTP_201_CREATED)
+@app.post("/sede", response_model=SedeResponse, status_code=status.HTTP_201_CREATED)
 async def create_sede(sede: SedeCreate, db: db_dependency):
     db_sede = models.Sede(**sede.dict())
     db.add(db_sede)
@@ -88,6 +97,20 @@ async def read_sede(sede_id: uuid.UUID, db: db_dependency):
     if db_sede is None:
         raise HTTPException(status_code=404, detail="Sede not found")
     return db_sede
+
+@app.get("/sede", response_model=list[SedeResponse])
+async def get_all_sedes(db: db_dependency):
+    sedes = db.query(models.Sede).all()
+    return sedes
+
+@app.get("/sede/{sede_id}/employees", response_model=list[EmployeeResponse])
+async def get_employees_by_sede_id(sede_id: uuid.UUID, db: db_dependency):
+    sede = db.query(models.Sede).filter(models.Sede.id == sede_id).first()
+    if sede is None:
+        raise HTTPException(status_code=404, detail="Sede not found")
+
+    employees = db.query(models.Employees).filter(models.Employees.sede_id == sede_id).all()
+    return employees
 
 @app.put("/sede/{sede_id}", response_model=SedeResponse)
 async def update_sede(sede_id: uuid.UUID, updated_data: SedeUpdate, db: db_dependency):
@@ -111,10 +134,4 @@ async def delete_employee(sede_id: uuid.UUID, db: db_dependency):
     db.delete(db_sede)
     db.commit()
     return {"message": "Sede deleted successfully"}
-
-# Para probar que funciona
-@app.get("/hola")
-async def hello():
-    return "Hola"
-
 
