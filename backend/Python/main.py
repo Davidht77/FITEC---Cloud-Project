@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, Depends, status # type: ignore
-from pydantic import BaseModel # type: ignore
 from typing import Annotated # type: ignore
 import models
 from database import SessionLocal, engine # type: ignore
@@ -23,12 +22,12 @@ def get_db():
     finally:
         db.close()
 
-#Para injecion de dependencias:
+#Para inyeccion de dependencias:
 db_dependency = Annotated[Session, Depends(get_db)]
 
 @app.post("/employees/", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
 async def create_employee(employee: EmployeeCreate, db: db_dependency):
-    db_employee = models.Employees(**employee.dict())
+    db_employee = models.Employees(**employee.dict(exclude_unset=True))
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
@@ -40,6 +39,15 @@ async def read_employee(employee_id: uuid.UUID, db: db_dependency):
     if db_employee is None:
         raise HTTPException(status_code=404, detail="Employee not found")
     return db_employee
+
+@app.get("/sede/{sede_id}/employees", response_model=list[EmployeeResponse])
+async def get_employees_by_sede_id(sede_id: uuid.UUID, db: db_dependency):
+    sede = db.query(models.Sede).filter(models.Sede.id == sede_id).first()
+    if sede is None:
+        raise HTTPException(status_code=404, detail="Sede not found")
+
+    employees = db.query(models.Employees).filter(models.Employees.sede_id == sede_id).all()
+    return employees
 
 @app.put("/employees/{employee_id}", response_model=EmployeeResponse)
 async def update_employee(employee_id: uuid.UUID, updated_data: EmployeeUpdate, db: db_dependency):

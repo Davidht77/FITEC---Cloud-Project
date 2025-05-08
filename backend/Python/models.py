@@ -17,7 +17,7 @@ class RoleEnum(str, enum.Enum):
 class Employees(Base):
     __tablename__ = 'employees'
 
-    id = Column(Uuid, primary_key=True, default=uuid.uuid4(), index=True)
+    id = Column(Uuid, primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String(50))
     lastName = Column(String(50))
     age = Column(Float)
@@ -36,7 +36,7 @@ class Employees(Base):
 class Sede(Base):
     __tablename__ = 'sede'
 
-    id = Column(Uuid, primary_key=True, default=uuid.uuid4(), index=True)
+    id = Column(Uuid, primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String(50))
     address = Column(String(50))
     phone = Column(String(50))
