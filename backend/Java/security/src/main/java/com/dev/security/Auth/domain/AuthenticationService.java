@@ -75,7 +75,6 @@ public class AuthenticationService {
                     request.getPhone(),
                     request.getEmail(),
                     hashedPassword, // Envía la contraseña ya hasheada
-                    request.getSalary(),
                     request.getSede_id()// otros campos específicos del empleado...
             );
             // Llama al EmployeeService (FastAPI)

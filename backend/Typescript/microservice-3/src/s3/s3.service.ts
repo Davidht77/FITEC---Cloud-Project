@@ -22,6 +22,9 @@ export class S3Service {
   constructor(private configService: ConfigService) {
     const region = this.configService.get<string>('AWS_REGION');
     const bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
+    const accessKeyId = this.configService.get<string>('AWS_ACCESS_KEY_ID');
+    const secretAccessKey = this.configService.get<string>('AWS_SECRET_ACCESS_KEY');
+    const sessionToken = this.configService.get<string | undefined>('AWS_SESSION_TOKEN');
 
     if (!region) {
       throw new InternalServerErrorException('AWS_REGION environment variable is not set.');
@@ -29,19 +32,25 @@ export class S3Service {
     if (!bucketName) {
         throw new InternalServerErrorException('AWS_S3_BUCKET_NAME environment variable is not set.');
     }
+    if (!accessKeyId) {
+        throw new InternalServerErrorException('AWS_ACCESS_KEY_ID environment variable is not set.');
+    }
+    if (!secretAccessKey) {
+        throw new InternalServerErrorException('AWS_SECRET_ACCESS_KEY environment variable is not set.');
+    }
+    // sessionToken is optional for many credential types, so no strict check throwing an error if it's not set.
 
     // Ahora que hemos verificado que no son undefined, podemos asignarlas.
     this.region = region;
     this.bucketName = bucketName;
     
-    // El SDK buscará credenciales automáticamente si se usa IAM Role en AWS
-    // Si no usas Roles, configuraría credentials aquí o usaría variables de entorno
     this.s3Client = new S3Client({
       region: this.region,
-      // credentials: { // Solo si no usas IAM Roles en AWS
-      //   accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
-      //   secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY'),
-      // },
+      credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey,
+        ...(sessionToken && { sessionToken: sessionToken }), // Conditionally add if present
+      },
     });
   }
 

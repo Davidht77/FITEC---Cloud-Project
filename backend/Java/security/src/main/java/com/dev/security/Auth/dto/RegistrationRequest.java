@@ -17,8 +17,6 @@ public class RegistrationRequest {
     private String password; // Contraseña en texto plano
     private String userType; // "client" o "employee"
     // otros campos...
-    private Double salary;
-
-    protected UUID planId;
-    private UUID sede_id;
+    protected UUID planId; // puede ser null
+    private UUID sede_id; //puede ser null
 }

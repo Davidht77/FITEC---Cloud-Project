@@ -106,3 +106,15 @@ async def read_sede(sede_id: uuid.UUID, db: db_dependency):
 async def read_all_sedes(db: db_dependency):
     db_sedes = db.query(models.Sede).all()
     return db_sedes
+
+@app.get("/sede/{sede_id}/employees", response_model=List[EmployeeBase])
+async def read_employees_by_sede(sede_id: uuid.UUID, db: db_dependency):
+    # First, check if the Sede exists
+    db_sede = db.query(models.Sede).filter(models.Sede.id == sede_id).first()
+    if db_sede is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sede not found")
+    
+    # Then, get all employees for that Sede
+    db_employees = db.query(models.Employees).filter(models.Employees.sede_id == sede_id).all()
+    # It's okay to return an empty list if no employees are found for an existing Sede
+    return db_employees
