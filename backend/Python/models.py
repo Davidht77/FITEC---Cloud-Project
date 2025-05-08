@@ -1,5 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, DateTime, String, Float, ForeignKey
+from datetime import datetime
+from sqlalchemy import Column, DateTime, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 import uuid
 import enum  # Importamos enum de Python

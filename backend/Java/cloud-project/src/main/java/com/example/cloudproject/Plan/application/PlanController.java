@@ -1,7 +1,9 @@
 package com.example.cloudproject.Plan.application;
 
 import com.example.cloudproject.Plan.domain.Plan;
+import com.example.cloudproject.Plan.domain.PlanDto;
 import com.example.cloudproject.Plan.domain.PlanService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,26 +21,26 @@ public class PlanController {
     }
 
     @GetMapping
-    public List<Plan> getAllPlans() {
+    public List<PlanDto> getAllPlans() {
         return planService.getAllPlans();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Plan> getPlanById(@PathVariable UUID id) {
+    public ResponseEntity<PlanDto> getPlanById(@PathVariable UUID id) {
         return planService.getPlanById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Plan createPlan(@RequestBody Plan plan) {
+    public PlanDto createPlan(@RequestBody PlanDto plan) {
         return planService.createPlan(plan);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Plan> updatePlan(@PathVariable UUID id, @RequestBody Plan plan) {
+    public ResponseEntity<PlanDto> updatePlan(@PathVariable UUID id, @RequestBody PlanDto plan) {
         try {
-            Plan updated = planService.updatePlan(id, plan);
+            PlanDto updated = planService.updatePlan(id, plan);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

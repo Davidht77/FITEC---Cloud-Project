@@ -4,6 +4,9 @@ import com.example.cloudproject.Client.domain.Client;
 import com.example.cloudproject.Client.domain.ClientService;
 import com.example.cloudproject.Client.dto.ClientRequestDto;
 import com.example.cloudproject.Client.dto.ClientResponseDto;
+import com.example.cloudproject.Client.dto.LoginCredentialsRequest;
+import com.example.cloudproject.Client.dto.UserValidationResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +20,13 @@ public class ClientController {
 
     public ClientController(ClientService clientService) {
         this.clientService = clientService;
+    }
+
+    @PostMapping("/credentials")
+    public ResponseEntity<UserValidationResponse> getClientCredentials(@RequestBody LoginCredentialsRequest loginCredentialsRequest) {
+        UserValidationResponse userValidationResponse = clientService.credentials(loginCredentialsRequest);
+        return ResponseEntity.ok(userValidationResponse);
+
     }
 
     @GetMapping

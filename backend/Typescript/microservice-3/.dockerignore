@@ -1,0 +1,27 @@
+# Ignorar dependencias de desarrollo y archivos de configuración local
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.env
+.git
+.gitignore
+
+# Ignorar archivos de compilación de TypeScript (si no se construyen en una etapa separada)
+# dist # Descomentar si tu Dockerfile no maneja la construcción en una etapa separada y copias 'dist' desde el host
+
+# Otros archivos o directorios que no deberían estar en la imagen
+README.md
+*.ts
+!src/main.ts # Ejemplo si necesitaras incluir específicamente un .ts, aunque no es común para producción
+test
+*.spec.ts
+*.e2e-spec.ts
+
+# Archivos de configuración de IDEs
+.vscode/
+.idea/
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db

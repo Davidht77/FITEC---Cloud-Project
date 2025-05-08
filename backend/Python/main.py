@@ -1,18 +1,17 @@
+import datetime
 from fastapi import FastAPI, HTTPException, Depends, status # type: ignore
 from typing import Annotated # type: ignore
 import models
-from database import SessionLocal, engine # type: ignore
+from database import Base, SessionLocal, engine # type: ignore
 from sqlalchemy.orm import Session # type: ignore
 import uuid
 from schemas import EmployeeCreate, EmployeeResponse, EmployeeUpdate, LoginCredentialsRequest, SedeCreate, SedeResponse, SedeUpdate, UserValidationResponse
 
-# Por ahora funciona. No olvidar seguir los pasos en el Google Docs para correrlo
+models.Base.metadata.create_all(bind=engine)
 
 # Crea una instancia de la aplicación FastAPI
 app = FastAPI()
 
-models.Base.metadata.drop_all(bind=engine) # Borra todas las tablas definidas en Base.metadata
-models.Base.metadata.create_all(bind=engine)  # Crea las tablas en la base de datos
 
 # Crea una base de datos de ejemplo
 def get_db():

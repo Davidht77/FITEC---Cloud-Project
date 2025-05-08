@@ -1,3 +1,4 @@
+/// <reference types="multer" />
 import {
     Controller,
     Post,
@@ -62,15 +63,25 @@ export class S3Controller {
     };
 }   
 // Puedes añadir rutas para eliminar archivos, o para generar URLs firmadas
-   @Delete('/file/:key')
+   @Delete('/file/*key')
    async deleteFile(@Param('key') key: string) {
-     await this.s3Service.deleteFile(key);
+
+     const stringKey = key[0] +'/'+key[1];
+
+     await this.s3Service.deleteFile(stringKey);
      return { message: 'Archivo eliminado exitosamente' };
    }
 
-   @Get('/file/:key/signed-url')
+   @Get('/file/*key/signed-url')
    async getSignedUrl(@Param('key') key: string) {
-      const url = await this.s3Service.getSignedUrl(key);
+
+      if (!key) {
+        throw new BadRequestException('A valid S3 object key must be provided.');
+      }
+
+      const stringKey = key[0] +'/'+key[1];
+
+      const url = await this.s3Service.getSignedUrl(stringKey);
       return { signedUrl: url };
    }
 }

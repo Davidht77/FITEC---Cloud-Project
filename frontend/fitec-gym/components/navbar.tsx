@@ -19,7 +19,7 @@ export default function Navbar() {
   ]
 
   return (
-    <header className="container mx-auto px-4 py-6 flex items-center justify-between relative z-50">
+    <header className="container mx-auto px-4 py-6 flex items-center justify-between relative z-50" style={{ viewTransitionName: 'main-navbar' }}>
       <div className="flex items-center gap-2">
         <Dumbbell className="h-6 w-6 text-yellow-400" />
         <Link href="/" className="text-xl font-bold">

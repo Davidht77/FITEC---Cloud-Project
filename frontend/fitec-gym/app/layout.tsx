@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: "FITEC - Tu gimnasio de alto rendimiento",
   description:
     "FITEC es el gimnasio completo que te ofrece entrenamiento personalizado, equipos de última generación y una comunidad que te impulsa a ser mejor.",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -25,7 +24,7 @@ export default function RootLayout({
         className={`${inter.className} bg-gradient-to-br from-sky-900 via-sky-800 to-sky-950 text-white min-h-screen flex flex-col`}
       >
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1"  style={{ viewTransitionName: 'page-main-content' }}>{children}</main>
         <Footer />
       </body>
     </html>

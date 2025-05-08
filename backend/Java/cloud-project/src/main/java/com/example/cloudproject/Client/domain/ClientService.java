@@ -2,12 +2,16 @@ package com.example.cloudproject.Client.domain;
 
 import com.example.cloudproject.Client.dto.ClientRequestDto;
 import com.example.cloudproject.Client.dto.ClientResponseDto;
+import com.example.cloudproject.Client.dto.LoginCredentialsRequest;
+import com.example.cloudproject.Client.dto.UserValidationResponse;
 import com.example.cloudproject.Client.infrastructure.ClientRepository;
 import com.example.cloudproject.Plan.domain.Plan;
 import com.example.cloudproject.Plan.domain.PlanDto;
 import com.example.cloudproject.Plan.infrastructure.PlanRepository;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,7 +32,6 @@ public class ClientService {
         Plan plan = client.getPlan();
 
         PlanDto planDto = new PlanDto();
-        planDto.setId(plan.getId());
         planDto.setName(plan.getName());
         planDto.setDescription(plan.getDescription());
         planDto.setPrice(plan.getPrice());
@@ -38,9 +41,9 @@ public class ClientService {
         clientDto.setLastName(client.getLastName());
         clientDto.setEmail(client.getEmail());
         clientDto.setPhone(client.getPhone());
-        clientDto.setAddress(client.getAddress());
         clientDto.setPlan(planDto);
         clientDto.setId(client.getId());
+
 
         return clientDto;
     }
@@ -68,12 +71,12 @@ public class ClientService {
                 .orElseThrow(() -> new IllegalArgumentException("El Plan con ID " + planId + " no existe."));
 
         Client client = new Client();
-        client.setAddress(clientDto.getAddress());
         client.setName(clientDto.getName());
         client.setLastName(clientDto.getLastName());
         client.setEmail(clientDto.getEmail());
         client.setPhone(clientDto.getPhone());
         client.setPlan(plan);
+        client.setPassword(clientDto.getPassword());
 
 
         clientRepository.save(client);
@@ -87,7 +90,7 @@ public class ClientService {
                     client.setLastName(clientRequestDto.getLastName());
                     client.setEmail(clientRequestDto.getEmail());
                     client.setPhone(clientRequestDto.getPhone());
-                    client.setAddress(clientRequestDto.getAddress());
+                    client.setPassword(clientRequestDto.getPassword());
 
                     // Obtener el plan por ID
                     Plan plan = planRepository.findById(clientRequestDto.getPlanId())
@@ -105,6 +108,17 @@ public class ClientService {
         clientRepository.deleteById(id);
     }
 
+    public UserValidationResponse credentials(LoginCredentialsRequest request){
+        List<Client> list= clientRepository.findClientByEmail(request.getEmail());
+        if(list.isEmpty()) {
+            throw new IllegalArgumentException("El email no es ser valido.");
+        }
+        Client client = list.getFirst();
+        ArrayList<String> roles = new ArrayList<>();
+        roles.add("ROLE_USER");
+
+        return new UserValidationResponse(client.getId(),client.getEmail(), client.getPassword(), roles);
+    }
 
 
 
