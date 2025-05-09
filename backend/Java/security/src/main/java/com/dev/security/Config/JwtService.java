@@ -1,6 +1,5 @@
 package com.dev.security.Config;
 
-import com.dev.security.Auth.dto.RegistrationRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,4 +1,4 @@
-package com.dev.security.Invitation.dto;
+package com.dev.security.Auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,14 +9,16 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterEmployeeRequest {
-
+public class RegisterClientRequest {
     private String name;
     private String lastName;
     private Integer age;
     private String phone;
     private String email;
-    private String password;
-    private String invitationToken;
-    private UUID sedeId; //puede ser null
+    private String password; // Contraseña en texto plano
+    protected UUID planId;
+
+    public Integer getAge() {
+        return age;
+    }
 }

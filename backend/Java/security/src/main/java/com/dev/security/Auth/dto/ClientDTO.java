@@ -13,7 +13,7 @@ public class ClientDTO {
     private String name;
     private String lastName;
     private Integer age;
-    private String phoneNumber;
+    private String phone;
     private String email;
     private String password; // Contraseña hasheada
     private UUID planId;
