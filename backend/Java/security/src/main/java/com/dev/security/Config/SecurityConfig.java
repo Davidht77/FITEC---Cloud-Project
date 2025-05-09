@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/auth/register/**", "/auth/login", "/auth/admin/**").permitAll()
-                        .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs.yaml").permitAll()
                         .anyExchange().authenticated()
                 )
                 // Configura el Resource Server para usar el Bean ReactiveJwtDecoder que definiste

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # --- Servicio de Seguridad (Spring Boot) ---
+  security-service:
+    image: davidho2030/backend-security-service:latest
+    container_name: security_app
+    ports:
+      - "8081:8080" # Host:Contenedor (interno de Spring Boot)
+    env_file:
+      - ./security/.env # Carga variables desde este archivo
+    networks:
+      - fitec-network
+    restart: unless-stopped
+
+  # --- API de Clientes (Spring Boot) ---
+  client-api-service:
+    image: davidho2030/backend-client-service:latest
+    container_name: clientes_api_app
+    ports:
+      - "8082:8080"
+    env_file:
+      - ./client/.env
+    networks:
+      - fitec-network 
+    restart: unless-stopped
+
+  # --- Servicio Orquestador (Spring Boot) ---
+  orquestador-service:
+    image: tu-dockerhub-id/orquestador-service:latest
+    container_name: orquestador_app
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./orquestador/.env
+    networks:
+      - fitec-network
+    restart: unless-stopped
+    depends_on:
+      - security-service
+      - client-api-service
+      # - employee-service # Si existe
+      # - invitation-service # Si existe
+
+# Define la red personalizada
+networks:
+  fitec-network:
+    driver: bridge

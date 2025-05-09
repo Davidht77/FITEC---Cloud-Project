@@ -5,10 +5,10 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Copia el JAR al contenedor
-COPY target/cloud-project-0.0.1-SNAPSHOT.jar app.jar
+COPY target/orquestador-0.0.1-SNAPSHOT.jar app.jar
 
 # Expone el puerto (cámbialo si tu app usa otro)
-EXPOSE 8082
+EXPOSE 8080
 
 # Comando para ejecutar el JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
