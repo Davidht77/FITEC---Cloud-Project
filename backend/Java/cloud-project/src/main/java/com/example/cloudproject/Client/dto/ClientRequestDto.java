@@ -12,11 +12,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ClientRequestDto {
+
     private String name;
     private String lastName;
-    private String email;
+    private Integer age;
     private String phone;
+    private String email;
     private String password;
+    private String imagenUrlKey;
     private UUID planId;
 
 }

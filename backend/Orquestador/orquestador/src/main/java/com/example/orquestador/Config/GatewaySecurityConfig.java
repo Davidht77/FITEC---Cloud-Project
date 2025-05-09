@@ -93,7 +93,7 @@ public class GatewaySecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Rutas públicas:
                         // - El endpoint de login/registro de tu AuthService (a través del Gateway)
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/register/**","/auth/login").permitAll()
                         // - Si AuthService expone JWK Set URI, hacerlo público
                         .requestMatchers("/.well-known/jwks.json").permitAll() // Si tu auth service lo expone en su raíz
                         // - Documentación de la API del Gateway (si la tienes)

@@ -1,7 +1,5 @@
-package com.example.cloudproject.Client.dto;
+package com.dev.security.Auth.dto;
 
-
-import com.example.cloudproject.Plan.domain.PlanDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,12 +9,14 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClientResponseDto {
-    private UUID id;
+public class RegisterEmployeeRequest {
+
     private String name;
     private String lastName;
     private Integer age;
-    private String email;
     private String phone;
-    private PlanDto plan;
+    private String email;
+    private String password;
+    private UUID sedeId;
+    private String invitationToken;
 }

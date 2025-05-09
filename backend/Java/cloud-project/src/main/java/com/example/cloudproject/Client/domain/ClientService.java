@@ -8,6 +8,8 @@ import com.example.cloudproject.Client.infrastructure.ClientRepository;
 import com.example.cloudproject.Plan.domain.Plan;
 import com.example.cloudproject.Plan.domain.PlanDto;
 import com.example.cloudproject.Plan.infrastructure.PlanRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Array;
@@ -41,6 +43,7 @@ public class ClientService {
         clientDto.setLastName(client.getLastName());
         clientDto.setEmail(client.getEmail());
         clientDto.setPhone(client.getPhone());
+        clientDto.setAge(client.getAge());
         clientDto.setPlan(planDto);
         clientDto.setId(client.getId());
 
@@ -73,10 +76,11 @@ public class ClientService {
         Client client = new Client();
         client.setName(clientDto.getName());
         client.setLastName(clientDto.getLastName());
-        client.setEmail(clientDto.getEmail());
+        client.setAge(clientDto.getAge());
         client.setPhone(clientDto.getPhone());
-        client.setPlan(plan);
+        client.setEmail(clientDto.getEmail());
         client.setPassword(clientDto.getPassword());
+        client.setPlan(plan);
 
 
         clientRepository.save(client);
@@ -86,11 +90,25 @@ public class ClientService {
     public ClientResponseDto updateClient(UUID id, ClientRequestDto clientRequestDto) {
         return clientRepository.findById(id)
                 .map(client -> {
-                    client.setName(clientRequestDto.getName());
-                    client.setLastName(clientRequestDto.getLastName());
-                    client.setEmail(clientRequestDto.getEmail());
-                    client.setPhone(clientRequestDto.getPhone());
-                    client.setPassword(clientRequestDto.getPassword());
+                    if (clientRequestDto.getName() != null) {
+                        client.setName(clientRequestDto.getName());
+                    }
+                    if (clientRequestDto.getLastName() != null) {
+                        client.setLastName(clientRequestDto.getLastName());
+                    }
+                    if (clientRequestDto.getAge() != null) {
+                        client.setAge(clientRequestDto.getAge());
+                    }
+                    if (clientRequestDto.getEmail() != null) {
+                        client.setEmail(clientRequestDto.getEmail());
+                    }
+                    if (clientRequestDto.getPhone() != null) {
+                        client.setPhone(clientRequestDto.getPhone());
+                    }
+                    if (clientRequestDto.getImagenUrlKey() != null) {
+                        client.setImagenUrlKey(clientRequestDto.getImagenUrlKey());
+                    }
+
 
                     // Obtener el plan por ID
                     Plan plan = planRepository.findById(clientRequestDto.getPlanId())

@@ -9,14 +9,16 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegistrationRequest {
+public class RegisterClientRequest {
     private String name;
     private String lastName;
+    private Integer age;
     private String phone;
     private String email;
     private String password; // Contraseña en texto plano
-    private String userType; // "client" o "employee"
-    // otros campos...
-    protected UUID planId; // puede ser null
-    private UUID sede_id; //puede ser null
+    protected UUID planId;
+
+    public Integer getAge() {
+        return age;
+    }
 }

@@ -26,7 +26,10 @@ public class Plan {
 
     private String description;
 
-    private double price;
+    private Double price;
+
+    private String imagenUrlKey;
+
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true) // 'client' es el nombre del campo en la clase Payment
     private List<Client> clients = new ArrayList<>();
 
