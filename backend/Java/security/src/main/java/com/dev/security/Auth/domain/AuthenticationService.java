@@ -3,14 +3,17 @@ package com.dev.security.Auth.domain;
 import com.dev.security.Auth.dto.*;
 import com.dev.security.Config.JwtService;
 import com.dev.security.Auth.dto.RegisterEmployeeRequest;
+import com.dev.security.Invitation.dto.InvitationTokenResponse;
+import com.dev.security.Invitation.dto.InviteEmployeeRequest;
+import com.dev.security.Invitation.dto.ValidateInvitationDto;
+import com.dev.security.Invitation.dto.ValidateInvitationResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -21,17 +24,48 @@ public class AuthenticationService {
     private final String clientServiceUrl;
     private final String employeeServiceUrl;
     private final JwtService jwtTokenProvider;
+    private final String invitationServiceUrl; // Ya lo tenías con @Value
+
 
     public AuthenticationService(
             WebClient.Builder webClientBuilder,
             PasswordEncoder passwordEncoder,
             @Value("${app.services.client.base-url}") String clientServiceUrl,
-            @Value("${app.services.employee.base-url}") String employeeServiceUrl, JwtService jwtTokenProvider) {
+            @Value("${app.services.employee.base-url}") String employeeServiceUrl,
+            @Value("${app.services.invitation.base-url}") String invitationServiceUrl, // Inyecta la URL
+            JwtService jwtTokenProvider) {
         this.webClientBuilder = webClientBuilder;
         this.passwordEncoder = passwordEncoder;
         this.clientServiceUrl = clientServiceUrl;
         this.employeeServiceUrl = employeeServiceUrl;
+        this.invitationServiceUrl = invitationServiceUrl; // Asigna la URL
         this.jwtTokenProvider = jwtTokenProvider;
+    }
+
+    // --- NUEVO METODO: INICIAR INVITACIÓN DE EMPLEADO ---
+    public Mono<InvitationTokenResponse> initiateEmployeeInvitation(InviteEmployeeRequest inviteRequest) {
+        // Llama al servicio de invitaciones (NestJS) para crear un token
+        return webClientBuilder.baseUrl(invitationServiceUrl).build()
+                .post()
+                .uri("/invitations") // Endpoint en el servicio de NestJS para crear invitaciones
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(inviteRequest)
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(String.class)
+                                .defaultIfEmpty("[No error body provided from invitation service]")
+                                .flatMap(errorBody -> {
+                                    String errorMessage = "Invitation service error during creation: " + response.statusCode() + " - " + errorBody;
+                                    return Mono.error(new RuntimeException(errorMessage));
+                                })
+                )
+                .bodyToMono(InvitationTokenResponse.class)
+                .doOnSuccess(response -> {
+                    // Aquí podrías desencadenar el envío del email si este servicio es responsable
+                    // o si el servicio de NestJS no lo hace.
+                    System.out.println("Invitación creada para: " + response.getInvitedEmail() + ", Token: " + response.getToken());
+                });
     }
 
     public Mono<Void> registerUser(RegisterClientRequest request) {
@@ -75,40 +109,66 @@ public class AuthenticationService {
     }
 
     public Mono<Void> registerEmployee(RegisterEmployeeRequest request) {
-        String hashedPassword = passwordEncoder.encode(request.getPassword());
+        // 1. Validar el token de invitación
+        ValidateInvitationDto validationPayload = new ValidateInvitationDto(request.getInvitationToken());
 
-        EmployeeDTO employeeData = new EmployeeDTO(
-                    request.getName(),
-                    request.getLastName(),
-                    request.getAge(),
-                    request.getPhone(),
-                    request.getEmail(),
-                    hashedPassword, // Envía la contraseña ya hasheada
-                    request.getSedeId()// otros campos específicos del empleado...
-            );
-            // Llama al EmployeeService (FastAPI)
-            return webClientBuilder.baseUrl(employeeServiceUrl).build()
-                    .post()
-                    .uri("/employees") // Endpoint en EmployeeService para crear empleados
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(employeeData)
-                    .retrieve()
-                    .onStatus(
-                            HttpStatusCode::isError,
+        return webClientBuilder.baseUrl(invitationServiceUrl).build()
+                .post()
+                .uri("/invitations/validate-and-consume") // Endpoint en NestJS para validar y consumir
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(validationPayload)
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError, // Captura errores 4xx y 5xx
+                        response -> response.bodyToMono(String.class)
+                                .defaultIfEmpty("[No error body provided from invitation validation service]")
+                                .flatMap(errorBody -> {
+                                    // Puedes ser más específico con el tipo de excepción si quieres
+                                    String errorMessage = "Invitation token validation failed: " + response.statusCode() + " - " + errorBody;
+                                    return Mono.error(new BadCredentialsException(errorMessage)); // O una excepción personalizada
+                                })
+                )
+                .bodyToMono(ValidateInvitationResponse.class)
+                .flatMap(validationResponse -> {
+                    if (validationResponse == null || !validationResponse.isValid()) {
+                        return Mono.error(new BadCredentialsException("Invalid or expired invitation token."));
+                    }
+                    if (!validationResponse.getEmail().equalsIgnoreCase(request.getEmail())) {
+                        return Mono.error(new BadCredentialsException("Invitation token email mismatch."));
+                    }
 
-                            // Función de manejo: La misma que teníamos antes
-                            response ->
-                                    response.bodyToMono(String.class)
-                                            .defaultIfEmpty("[No error body provided from service]")
+                    // 2. Si el token es válido, proceder con el registro del empleado
+                    String hashedPassword = passwordEncoder.encode(request.getPassword());
+                    EmployeeDTO employeeData = new EmployeeDTO(
+                            request.getName(),
+                            request.getLastName(),
+                            request.getAge(),
+                            request.getPhone(),
+                            request.getEmail(),
+                            hashedPassword,
+                            request.getSedeId()
+                    );
+
+                    return webClientBuilder.baseUrl(employeeServiceUrl).build()
+                            .post()
+                            .uri("/employees") // Endpoint en EmployeeService para crear empleados
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(employeeData)
+                            .retrieve()
+                            .onStatus(
+                                    HttpStatusCode::isError,
+                                    empResponse -> empResponse.bodyToMono(String.class)
+                                            .defaultIfEmpty("[No error body provided from employee service]")
                                             .flatMap(errorBody -> {
-                                                String errorMessage = "Service error: " + response.statusCode() + " - " + errorBody;
-                                                RuntimeException exceptionToThrow = new RuntimeException(errorMessage);
-                                                return Mono.error(exceptionToThrow);
+                                                String errorMessage = "Employee service error: " + empResponse.statusCode() + " - " + errorBody;
+                                                // Considerar lógica de compensación si la creación del empleado falla
+                                                // después de que el token de invitación fue consumido.
+                                                return Mono.error(new RuntimeException(errorMessage));
                                             })
-                    )
-                    .toBodilessEntity()
-                    .then();
-
+                            )
+                            .toBodilessEntity()
+                            .then(); // Convierte a Mono<Void>
+                });
     }
 
 
