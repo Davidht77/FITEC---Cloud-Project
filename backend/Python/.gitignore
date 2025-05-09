@@ -1,5 +1,6 @@
 # Carpetas de Python que no deben subirse
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 
@@ -22,6 +23,12 @@ Thumbs.db
 # Archivos compilados por Cython
 *.c
 *.so
+
+# Archivos generados por Docker (opcional)
+*.pid
+*.tar
+*.img
+*.bak
 
 # Archivos generados por pip
 pip-wheel-metadata/
