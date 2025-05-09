@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InviteEmployeeRequest {
-    private String invitedEmail;
-    private String invitationType  = "EMPLOYEE_CANDIDATE";
+public class ValidateInvitationDto {
+    private String token;
 }
