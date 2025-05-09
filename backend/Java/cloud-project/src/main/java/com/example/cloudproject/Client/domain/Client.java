@@ -21,17 +21,22 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String lastName;
 
+    @Column(nullable = false)
     private Integer age;
 
     @Column(unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String phone;
 
+    @Column(nullable = false)
     private String password;
 
     private String imagenUrlKey;

@@ -3,8 +3,8 @@ package com.dev.security.Auth.application;
 import com.dev.security.Auth.domain.AuthenticationService;
 import com.dev.security.Auth.dto.AuthResponse;
 import com.dev.security.Auth.dto.LoginRequest;
-import com.dev.security.Auth.dto.RegistrationRequest;
-import com.dev.security.Invitation.dto.RegisterEmployeeRequest;
+import com.dev.security.Auth.dto.RegisterClientRequest;
+import com.dev.security.Auth.dto.RegisterEmployeeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +22,7 @@ public class AuthController {
 
 
     @PostMapping("/register/client")
-    Mono<Void> registrarse1(@RequestBody RegistrationRequest registerRequest){
+    Mono<Void> registrarse1(@RequestBody RegisterClientRequest registerRequest){
         return authService.registerUser(registerRequest);
     }
 

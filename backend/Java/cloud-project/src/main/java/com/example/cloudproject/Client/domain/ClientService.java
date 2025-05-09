@@ -8,6 +8,8 @@ import com.example.cloudproject.Client.infrastructure.ClientRepository;
 import com.example.cloudproject.Plan.domain.Plan;
 import com.example.cloudproject.Plan.domain.PlanDto;
 import com.example.cloudproject.Plan.infrastructure.PlanRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Array;
@@ -41,6 +43,7 @@ public class ClientService {
         clientDto.setLastName(client.getLastName());
         clientDto.setEmail(client.getEmail());
         clientDto.setPhone(client.getPhone());
+        clientDto.setAge(client.getAge());
         clientDto.setPlan(planDto);
         clientDto.setId(client.getId());
 
@@ -74,8 +77,8 @@ public class ClientService {
         client.setName(clientDto.getName());
         client.setLastName(clientDto.getLastName());
         client.setAge(clientDto.getAge());
-        client.setEmail(clientDto.getEmail());
         client.setPhone(clientDto.getPhone());
+        client.setEmail(clientDto.getEmail());
         client.setPassword(clientDto.getPassword());
         client.setPlan(plan);
 

@@ -2,7 +2,7 @@ package com.dev.security.Auth.domain;
 
 import com.dev.security.Auth.dto.*;
 import com.dev.security.Config.JwtService;
-import com.dev.security.Invitation.dto.RegisterEmployeeRequest;
+import com.dev.security.Auth.dto.RegisterEmployeeRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -34,7 +34,7 @@ public class AuthenticationService {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public Mono<Void> registerUser(RegistrationRequest request) {
+    public Mono<Void> registerUser(RegisterClientRequest request) {
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
         // Determina a qué servicio llamar
@@ -47,6 +47,7 @@ public class AuthenticationService {
                     hashedPassword, // Envía la contraseña ya hasheada
                     request.getPlanId()
             );
+
             // Llama al ClientService
             return webClientBuilder.baseUrl(clientServiceUrl).build()
                     .post()

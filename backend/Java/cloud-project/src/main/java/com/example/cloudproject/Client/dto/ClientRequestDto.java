@@ -12,6 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ClientRequestDto {
+
     private String name;
     private String lastName;
     private Integer age;

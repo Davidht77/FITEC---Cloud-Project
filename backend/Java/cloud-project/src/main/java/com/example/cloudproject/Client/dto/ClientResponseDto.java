@@ -18,6 +18,5 @@ public class ClientResponseDto {
     private Integer age;
     private String email;
     private String phone;
-    private String address;
     private PlanDto plan;
 }

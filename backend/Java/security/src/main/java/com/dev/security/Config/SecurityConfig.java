@@ -44,7 +44,7 @@ public class SecurityConfig {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/auth/register", "/auth/login").permitAll()
+                        .pathMatchers("/auth/register/**", "/auth/login").permitAll()
                         .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyExchange().authenticated()
                 )
