@@ -12,7 +12,7 @@ app:
       base-url: ${NESTJS_URL:http://localhost:3000}
 
 jwt:
-  secret: AYlvhZBK/45ggInq5cb2Kz/eKeUopeGUxiUlk0WTZbue8w+jiCoz0MGsvO06bg94k/RNYLhzN6qTgWdV7UfL8Q==
+  secret: ${JWT-KEY}
 
 server:
   port: 8081

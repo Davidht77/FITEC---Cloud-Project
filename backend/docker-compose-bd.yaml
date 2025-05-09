@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  db_api-client:
+    image: postgres:15-alpine
+    container_name: my-postgres-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - fitec_network
+
+  db_api-employees:
+    image: mysql:8
+    container_name: my-mysql-db
+    restart: always
+    ports:
+      - "3336:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mypassword
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+      MYSQL_DATABASE: mydatabase
+    volumes:
+      - mysqldata:/var/lib/mysql
+    networks:
+      - fitec_network
+
+  db_api-nosql:
+    image: mongo:6.0
+    container_name: my-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: mongopassword
+    volumes:
+      - mongodbdata:/data/db
+    networks:
+      - fitec_network
+
+# Definición de la red
+networks:
+  fitec_network:
+    driver: bridge
+
+# Definición de volúmenes nombrados para persistencia
+volumes:
+  pgdata:
+  mysqldata:
+  mongodbdata:

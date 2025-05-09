@@ -61,13 +61,33 @@ spring:
               - AddResponseHeader=X-Powered-By, FITEC Gateway Service
 
           # Ruta 7: NoSQL Service (FAQ)
-          - id: nosql-service-route # ID único
+          - id: faq-service-route # ID único
             uri: ${NESTJS_URL:http://localhost:3000}
             predicates:
               - Path=/faq/**
             filters:
               - AddResponseHeader=X-Powered-By, FITEC Gateway Service
-
+          # Ruta 8: S3 Service
+          - id: nosql-s3-service-route # ID único
+            uri: ${NESTJS_URL:http://localhost:3000}
+            predicates:
+              - Path=/s3/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+          # Ruta 9: Invitations Service
+          - id: nosql-invitations-service-route # ID único
+            uri: ${NESTJS_URL:http://localhost:3000}
+            predicates:
+              - Path=/invitations/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
+          # Ruta 10: Feedback Service
+          - id: nosql-feedback-service-route # ID único
+            uri: ${NESTJS_URL:http://localhost:3000}
+            predicates:
+              - Path=/feedback/**
+            filters:
+              - AddResponseHeader=X-Powered-By, FITEC Gateway Service
 logging:
   level:
     # Niveles de logging que ya tenías (buenos para empezar)
