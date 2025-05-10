@@ -52,5 +52,12 @@ public class PlanController {
         planService.deletePlan(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping()
+    public ResponseEntity<Void> deletePlanbyName(@RequestParam String name) {
+        planService.deletebyName(name);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 
