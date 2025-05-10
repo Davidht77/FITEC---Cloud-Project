@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  nosql-api-service:
+    image: davidho2030/backend-nosql-service:latest
+    build:
+      context: ./Typescript/microservice-3
+      dockerfile: Dockerfile
+    container_name: typescript_service_app
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./Typescript/microservice-3/.env
+    networks:
+      - fitec_network
+
+  employee-api-service:
+    image: davidho2030/backend-employee-service:latest
+    build:
+      context: ./Python
+      dockerfile: Dockerfile
+    container_name: python_fastapi_app
+    ports:
+      - "8000:8000" 
+    env_file:
+      - ./Python/.env
+    networks:
+      - fitec_network
+
+volumes:
+  python_mysqldata:
+
+networks:
+  fitec_network:
+    external: true

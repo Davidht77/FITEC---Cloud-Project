@@ -2,17 +2,19 @@ version: '3.8'
 
 services:
   cloud-project-service:
+    image: davidho2030/backend-client-service:latest
     build:
       context: ./Java/cloud-project
       dockerfile: Dockerfile
     ports:
-      - "8080:8080" # Asume que cloud-project corre en el puerto 8080
+      - "8082:8082" # Asume que cloud-project corre en el puerto 8080
     env_file:
       - ./Java/cloud-project/.env
     networks:
       - fitec-network
 
   security-service:
+    image: davidho2030/backend-security-service:latest
     build:
       context: ./Java/security
       dockerfile: Dockerfile
@@ -24,11 +26,12 @@ services:
       - fitec-network
 
   orquestador-service:
+    image: davidho2030/backend-orquestador-service:latest
     build:
       context: ./Orquestador/orquestador
       dockerfile: Dockerfile
     ports:
-      - "8082:8082" # Asume que orquestador corre en el puerto 8082
+      - "8080:8080" # Asume que orquestador corre en el puerto 8082
     env_file:
       - ./Orquestador/orquestador/.env
     depends_on:

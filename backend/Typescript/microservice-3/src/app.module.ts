@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { EmployeeModule } from './employee/employee.module';
 import { QuestionModule } from './question/question.module';
 import { S3Service } from './s3/s3.service';
 import { S3Controller } from './s3/s3.controller';
@@ -22,7 +21,7 @@ import { InvitationsModule } from './invitations/invitations.module';
       isGlobal: true, // Esto hace que ConfigService esté disponible en cualquier módulo sin importarlo explícitamente
        envFilePath: '.env', // Especifica explícitamente la ruta si no está en la raíz
     }),
-    EmployeeModule, QuestionModule, FeedbackModule, InvitationsModule],
+    QuestionModule, FeedbackModule, InvitationsModule],
   controllers: [AppController, S3Controller],
   providers: [AppService, S3Service, ConfigService],
 })

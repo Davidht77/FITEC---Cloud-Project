@@ -6,7 +6,7 @@ services:
     image: davidho2030/backend-security-service:latest
     container_name: security_app
     ports:
-      - "8081:8080" # Host:Contenedor (interno de Spring Boot)
+      - "8081:8081" # Host:Contenedor (interno de Spring Boot)
     env_file:
       - ./security/.env # Carga variables desde este archivo
     networks:
@@ -18,7 +18,7 @@ services:
     image: davidho2030/backend-client-service:latest
     container_name: clientes_api_app
     ports:
-      - "8082:8080"
+      - "8082:8082"
     env_file:
       - ./client/.env
     networks:
@@ -36,11 +36,7 @@ services:
     networks:
       - fitec-network
     restart: unless-stopped
-    depends_on:
-      - security-service
-      - client-api-service
-      # - employee-service # Si existe
-      # - invitation-service # Si existe
+
 
 # Define la red personalizada
 networks:

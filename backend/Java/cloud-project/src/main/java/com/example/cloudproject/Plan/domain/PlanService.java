@@ -19,6 +19,7 @@ public class PlanService {
 
     private PlanDto mapToDto(Plan plan) {
         PlanDto dto = new PlanDto();
+        dto.setPlanId(plan.getId());
         dto.setName(plan.getName());
         dto.setDescription(plan.getDescription());
         dto.setPrice(plan.getPrice());
@@ -65,6 +66,13 @@ public class PlanService {
 
     public void deletePlan(UUID id) {
         planRepository.deleteById(id);
+    }
+
+    public void deletebyName(String name) {
+        Optional<Plan> plan = planRepository.findByName(name);
+        if (plan.isPresent()) {
+            deletePlan(plan.get().getId());
+        }
     }
 
 }

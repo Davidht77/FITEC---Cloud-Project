@@ -5,11 +5,11 @@ spring:
 app:
   services:
     client:
-      base-url: ${FASTAPI_URL:http://localhost:8082} # URL del ClientService (ajusta puerto/nombre)
+      base-url: ${SPRING_URL:http://localhost:8082} # URL del ClientService (ajusta puerto/nombre)
     employee:
-      base-url: ${SPRING_URL:http://localhost:8000} # URL del EmployeeService (ajusta puerto/nombre)
+      base-url: ${FASTAPI_URL::http://localhost:8000} # URL del EmployeeService (ajusta puerto/nombre)
     invitation:
-      <base-url: ${NESTJS_URL:http://localhost:3000}
+      base-url: ${NESTJS_URL:http://localhost:3000}
 
 jwt:
   secret: ${JWT-KEY}
