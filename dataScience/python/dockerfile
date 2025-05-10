@@ -1,0 +1,18 @@
+
+FROM python:3.11
+
+# Establecemos el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+
+COPY ./app /app
+COPY .env .env 
+
+
+COPY requirements.txt /app/requirements.txt
+
+
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install python-dotenv boto3 sqlalchemy pymysql faker
+
+CMD ["python", "generate_data.py"]
