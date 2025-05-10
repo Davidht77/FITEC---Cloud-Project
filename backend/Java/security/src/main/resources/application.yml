@@ -9,7 +9,7 @@ app:
     employee:
       base-url: ${SPRING_URL:http://localhost:8000} # URL del EmployeeService (ajusta puerto/nombre)
     invitation:
-      base-url: ${NESTJS_URL:http://localhost:3000}
+      <base-url: ${NESTJS_URL:http://localhost:3000}
 
 jwt:
   secret: ${JWT-KEY}

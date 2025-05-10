@@ -1,12 +1,9 @@
 package com.example.cloudproject.Client.dto;
 
 
-import com.example.cloudproject.Plan.domain.PlanDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -20,6 +17,6 @@ public class ClientRequestDto {
     private String email;
     private String password;
     private String imagenUrlKey;
-    private UUID planId;
+    private String planName;
 
 }

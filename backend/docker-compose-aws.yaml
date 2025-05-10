@@ -27,7 +27,7 @@ services:
 
   # --- Servicio Orquestador (Spring Boot) ---
   orquestador-service:
-    image: tu-dockerhub-id/orquestador-service:latest
+    image: davidho2030/backend-orquestador-service:latest
     container_name: orquestador_app
     ports:
       - "8080:8080"

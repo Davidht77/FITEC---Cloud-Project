@@ -8,11 +8,8 @@ import com.example.cloudproject.Client.infrastructure.ClientRepository;
 import com.example.cloudproject.Plan.domain.Plan;
 import com.example.cloudproject.Plan.domain.PlanDto;
 import com.example.cloudproject.Plan.infrastructure.PlanRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -64,13 +61,13 @@ public class ClientService {
     }
 
     public ClientResponseDto createClient(ClientRequestDto clientDto) {
-        UUID planId = clientDto.getPlanId();
+        String planId = clientDto.getPlanName();
 
         if (planId == null) {
             throw new IllegalArgumentException("El Plan ID no puede ser nulo.");
         }
 
-        Plan plan = planRepository.findById(planId)
+        Plan plan = planRepository.findByName(planId)
                 .orElseThrow(() -> new IllegalArgumentException("El Plan con ID " + planId + " no existe."));
 
         Client client = new Client();
@@ -111,8 +108,8 @@ public class ClientService {
 
 
                     // Obtener el plan por ID
-                    Plan plan = planRepository.findById(clientRequestDto.getPlanId())
-                            .orElseThrow(() -> new RuntimeException("Plan not found with id " + clientRequestDto.getPlanId()));
+                    Plan plan = planRepository.findByName(clientRequestDto.getPlanName())
+                            .orElseThrow(() -> new RuntimeException("Plan not found with id " + clientRequestDto.getPlanName()));
                     client.setPlan(plan);
 
                     Client savedClient = clientRepository.save(client);

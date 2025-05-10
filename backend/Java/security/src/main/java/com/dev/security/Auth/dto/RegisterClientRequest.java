@@ -16,7 +16,7 @@ public class RegisterClientRequest {
     private String phone;
     private String email;
     private String password; // Contraseña en texto plano
-    protected UUID planId;
+    protected String planName;
 
     public Integer getAge() {
         return age;
