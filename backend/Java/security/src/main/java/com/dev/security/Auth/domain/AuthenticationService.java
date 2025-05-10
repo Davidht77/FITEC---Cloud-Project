@@ -13,7 +13,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -79,7 +78,7 @@ public class AuthenticationService {
                     request.getPhone(),
                     request.getEmail(),
                     hashedPassword, // Envía la contraseña ya hasheada
-                    request.getPlanId()
+                    request.getPlanName()
             );
 
             // Llama al ClientService

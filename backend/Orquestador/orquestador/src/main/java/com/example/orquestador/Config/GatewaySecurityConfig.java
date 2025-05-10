@@ -37,6 +37,9 @@ public class GatewaySecurityConfig {
     @Value("${jwt.secret}")
     private String jwtSecretString;
 
+    @Value("${app.cors.frontend-url}")
+    private String frontendAppUrl;
+
     // Método para obtener la clave, igual que antes
     private SecretKey getSigningKey() {
         logger.debug("Attempting to decode JWT secret string...");
@@ -116,7 +119,10 @@ public class GatewaySecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Permite todas las rutas
-                        .allowedOrigins("*") // Dominio del frontend
+                        .allowedOriginPatterns(
+                                "http://localhost:[*]", // Permite cualquier puerto en localhost
+                                frontendAppUrl // Permite cualquier subdominio
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true); // Permitir cookies y credenciales

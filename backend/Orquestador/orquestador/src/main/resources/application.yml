@@ -1,5 +1,9 @@
 jwt:
-  secret: AYlvhZBK/45ggInq5cb2Kz/eKeUopeGUxiUlk0WTZbue8w+jiCoz0MGsvO06bg94k/RNYLhzN6qTgWdV7UfL8Q==
+  secret: ${JWT-KEY}
+
+app:
+  cors:
+    frontend-url: ${FRONTEND_URL:}
 
 spring:
   application:

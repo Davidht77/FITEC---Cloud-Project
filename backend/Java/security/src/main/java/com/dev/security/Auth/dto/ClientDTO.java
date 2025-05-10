@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +14,6 @@ public class ClientDTO {
     private String phone;
     private String email;
     private String password; // Contraseña hasheada
-    private UUID planId;
+    private String planName;
     // otros campos...
 }
