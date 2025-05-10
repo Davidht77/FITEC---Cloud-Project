@@ -13,10 +13,10 @@ export default function PublicLayout({
 }) {
   return (
     <div
-      className={`${inter.className} bg-gradient-to-br from-sky-900 via-sky-800 to-sky-950 text-white min-h-screen flex flex-col`}
+      className={`${inter.className} bg-gradient-to-br from-sky-900 via-sky-800 to-sky-950 text-white flex flex-col`}
     >
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="w-full flex-grow">{children}</main>
       <Footer />
     </div>
   );

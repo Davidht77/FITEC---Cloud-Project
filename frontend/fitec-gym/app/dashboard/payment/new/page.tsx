@@ -1,13 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
-import { ArrowLeft, CreditCard, User, Calendar, Check } from "lucide-react"
+import { ArrowLeft, CreditCard, User, Calendar, Check } from 'lucide-react'
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-// Tipo para los planes
+// Tipo para los planes basado en PlanDto
 type Plan = {
   id: string
   name: string
@@ -15,10 +13,21 @@ type Plan = {
   price: number
 }
 
+// Tipo para el cliente basado en ClientResponseDto
+type Client = {
+  id: string
+  name: string
+  lastName: string
+  age: number
+  email: string
+  phone: string
+  plan: Plan | null
+}
+
 // Tipo para los pagos
 type PaymentType = "CARD" | "BANK_TRANSFER" | "PAYPAL" | "CASH"
 
-// Tipo para crear un pago
+// Tipo para crear un pago basado en CreatePaymentDto
 type CreatePayment = {
   clientId: string
   planId: string
@@ -38,48 +47,65 @@ export default function NewPaymentPage() {
   const [error, setError] = useState<string | null>(null)
   const [plans, setPlans] = useState<Plan[]>([])
 
-  // Cargar datos del cliente y planes disponibles
+  // Cargar datos del cliente y su plan asociado
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
 
-        // Obtener ID y nombre del cliente desde localStorage
+        // Obtener ID del cliente desde localStorage
         const id = localStorage.getItem("id")
-        const name = localStorage.getItem("name")
-
-        if (id && name) {
+        
+        if (id) {
           setClientId(id)
-          setClientName(name)
-        }
+          
+          try {
+            const response = await fetch(`http://localhost:8080/client/${id}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            })
 
-        // Cargar planes disponibles
-        try {
-          const response = await fetch("http://localhost:8080/plan", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          })
+            if (response.ok) {
+              const clientData: Client = await response.json()
+              setClientName(`${clientData.name} ${clientData.lastName}`)
 
-          if (response.ok) {
-            const data = await response.json()
-            setPlans(data)
-          } else {
-            throw new Error("Error al cargar los planes")
+              if (clientData.plan) {
+                setSelectedPlan(clientData.plan.id)
+                setPlans([clientData.plan])
+              }
+            } else {
+              throw new Error("Error al cargar los datos del cliente")
+            }
+          } catch (error) {
+            console.error("Error fetching client data:", error)
+            setError("Error al cargar los datos del cliente")
+
+            // 👇 Fallback con datos falsos para demo
+            const mockPlan: Plan = {
+              id: "1",
+              name: "Plan Básico",
+              description: "Acceso básico al gimnasio",
+              price: 50,
+            }
+
+            const mockClient: Client = {
+              id: id ?? "0",
+              name: "Usuario",
+              lastName: "Demo",
+              age: 20,
+              email: "demo@fitec.com",
+              phone: "987654321",
+              plan: mockPlan,
+            }
+
+            setClientName(`${mockClient.name} ${mockClient.lastName}`)
+            setSelectedPlan(mockPlan.id)
+            setPlans([mockPlan])
+            setError(null) // ← oculta el mensaje de error si mostramos datos falsos
+
           }
-        } catch (error) {
-          console.error("Error fetching plans:", error)
-          // Planes por defecto
-          setPlans([
-            { id: "1", name: "Plan Básico", description: "Acceso básico al gimnasio", price: 50 },
-            {
-              id: "2",
-              name: "Plan Premium",
-              description: "Acceso ilimitado a todas las instalaciones y clases",
-              price: 80,
-            },
-            { id: "3", name: "Plan VIP", description: "Acceso total con entrenador personal", price: 120 },
-          ])
+
         }
       } catch (error) {
         console.error("Error loading data:", error)
@@ -102,8 +128,13 @@ export default function NewPaymentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!clientId || !selectedPlan) {
-      setError("Por favor completa todos los campos requeridos")
+    if (!clientId) {
+      setError("No se pudo identificar al cliente")
+      return
+    }
+
+    if (plans.length === 0) {
+      setError("No se encontró un plan asociado al cliente")
       return
     }
 
@@ -142,12 +173,6 @@ export default function NewPaymentPage() {
     } catch (error) {
       console.error("Error creating payment:", error)
       setError(error instanceof Error ? error.message : "Error desconocido")
-
-      // Simulamos éxito aunque falle el backend (solo para demo)
-      setSuccess(true)
-      setTimeout(() => {
-        router.push("/dashboard/payment")
-      }, 2000)
     } finally {
       setSubmitting(false)
     }
@@ -201,34 +226,39 @@ export default function NewPaymentPage() {
             {/* Cliente */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
-              <div className="flex items-center bg-gray-50 p-3 rounded-lg">
-                <User className="w-5 h-5 text-sky-600 mr-2" />
-                <span className="text-gray-900">{clientName || "Usuario"}</span>
+              <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center">
+                  <User className="w-5 h-5 text-sky-600 mr-2" />
+                  <span className="text-gray-900 font-medium">{clientName || "Usuario"}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <span className="mr-1">ID:</span>
+                    <span className="text-gray-800">{clientId}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Plan */}
             <div className="mb-6">
-              <label htmlFor="planId" className="block text-sm font-medium text-gray-700 mb-2">
-                Selecciona un Plan
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Plan Asociado
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {plans.map((plan) => (
-                  <div
-                    key={plan.id}
-                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      selectedPlan === plan.id ? "border-sky-500 bg-sky-50" : "border-gray-200 hover:border-sky-200"
-                    }`}
-                    onClick={() => setSelectedPlan(plan.id)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium text-gray-900">{plan.name}</h3>
-                      <div className="text-sky-600 font-bold">${plan.price}</div>
-                    </div>
-                    <p className="text-sm text-gray-600">{plan.description}</p>
+              {plans.length > 0 ? (
+                <div className="border rounded-lg p-4 bg-sky-50 border-sky-500">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium text-gray-900">{plans[0].name}</h3>
+                    <div className="text-sky-600 font-bold">${plans[0].price}</div>
                   </div>
-                ))}
-              </div>
+                  <p className="text-sm text-gray-600">{plans[0].description}</p>
+                  <div className="mt-3 text-xs text-sky-700 bg-sky-100 inline-block px-2 py-1 rounded">
+                    Este es el plan asociado a tu cuenta
+                  </div>
+                </div>
+              ) : (
+                <div className="text-gray-500 italic">No se encontró un plan asociado</div>
+              )}
             </div>
 
             {/* Método de pago */}
@@ -312,7 +342,7 @@ export default function NewPaymentPage() {
             {/* Botones de acción */}
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
               <Link
-                href="/payment"
+                href="/dashboard/payment"
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 Cancelar

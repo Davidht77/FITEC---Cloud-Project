@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react"
 import { ArrowLeft, Calendar, CreditCard, User, FileText, Download, Printer } from 'lucide-react'
 import Link from "next/link"
+import { useParams } from "next/navigation"
 
 // Tipo para los pagos
 type PaymentType = "CARD" | "BANK_TRANSFER" | "PAYPAL" | "CASH"
@@ -12,13 +13,15 @@ type PaymentDetail = {
   clientName: string
   planName: string
   amount: number
-  date: string
+  date: string  
   payment: PaymentType
   planDescription: string
 }
 
-export default function PaymentDetailPage(props: { params: Promise<{ id?: string }> }) {
-  const { id } = use(props.params)
+
+export default function PaymentDetailPage() {
+  const params = useParams()
+  const id = params?.id as string
   const [payment, setPayment] = useState<PaymentDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -48,6 +51,8 @@ export default function PaymentDetailPage(props: { params: Promise<{ id?: string
         console.error("Error fetching payment details:", error)
         setError(error instanceof Error ? error.message : "Error desconocido")
         
+         // 👉 Confirma que esto se ejecuta
+  console.log("ENTRÓ AL CATCH, ID ES:", id)
         // Datos de ejemplo como fallback
         if (id === "1") {
           setPayment({
@@ -59,11 +64,35 @@ export default function PaymentDetailPage(props: { params: Promise<{ id?: string
             payment: "CARD",
             planDescription: "Acceso ilimitado a todas las instalaciones y clases"
           })
+        } else if (id === "2") {
+          setPayment({
+            id: "2",
+            clientName: "María López",
+            planName: "Plan Básico",
+            amount: 50.00,
+            date: "2025-04-28T15:45:00",
+            payment: "PAYPAL",
+            planDescription: "Acceso a clases básicas y sala de máquinas"
+          })
+        } else {
+          setPayment({
+            id: id ?? "0",
+            clientName: "Usuario genérico",
+            planName: "Plan temporal",
+            amount: 0,
+            date: new Date().toISOString(),
+            payment: "CARD",
+            planDescription: "Sin descripción disponible"
+          })
         }
+
+
+
       } finally {
         setLoading(false)
       }
     }
+    console.log("ID detectado:", id)
 
     if (id) {
       fetchPaymentDetail()
@@ -114,7 +143,7 @@ export default function PaymentDetailPage(props: { params: Promise<{ id?: string
   }
 
   // Mostrar error
-  if (error || !payment) {
+  if (error && !payment) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
@@ -131,6 +160,9 @@ export default function PaymentDetailPage(props: { params: Promise<{ id?: string
       </div>
     )
   }
+
+  if (!payment) return null
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -243,3 +275,4 @@ export default function PaymentDetailPage(props: { params: Promise<{ id?: string
     </div>
   )
 }
+

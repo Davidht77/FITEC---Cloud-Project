@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, ChevronRight, Star, Shield, Clock, Users, Award, ArrowRight } from 'lucide-react'
 import Link from "next/link"
+import { Check, ChevronRight, Star, Shield, Clock, Users, Award, ArrowRight } from "lucide-react"
 
 // Tipo para los planes
 type Plan = {
@@ -39,9 +39,9 @@ const planFeatures = {
 
 // Iconos para los planes
 const planIcons = {
-  "Plan Básico": <Clock className="w-6 h-6 text-blue-500" />,
-  "Plan Plus": <Users className="w-6 h-6 text-green-500" />,
-  "Plan Premium": <Award className="w-6 h-6 text-red-500" />,
+  "Plan Básico": <Clock className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors duration-300" />,
+  "Plan Plus": <Users className="w-6 h-6 text-green-600 group-hover:text-white transition-colors duration-300" />,
+  "Plan Premium": <Award className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors duration-300" />,
 }
 
 export default function PlansPage() {
@@ -136,7 +136,7 @@ export default function PlansPage() {
       case "Plan Plus":
         return "green"
       case "Plan Premium":
-        return "red"
+        return "purple"
       default:
         return "gray"
     }
@@ -187,31 +187,25 @@ export default function PlansPage() {
           return (
             <div
               key={plan.id}
-              className={`relative rounded-xl overflow-hidden transition-all duration-300 transform ${
-                isSelected ? "scale-105" : ""
-              } ${
-                isCurrentPlan
-                  ? `border-2 border-${planColor}-500 shadow-lg`
-                  : "border border-gray-200 hover:border-gray-300 shadow-md hover:shadow-lg"
-              }`}
+              className={`
+                group
+                relative rounded-xl overflow-hidden transform transition-all duration-300
+                border-2 ${isCurrentPlan ? `border-${planColor}-500` : `border-${planColor}-200 hover:border-${planColor}-400`}
+                shadow-md hover:shadow-lg hover:scale-105
+                cursor-pointer
+              `}
               onClick={() => setSelectedPlan(isSelected ? null : plan.id)}
             >
-              {/* Etiqueta de plan actual */}
-              {isCurrentPlan && (
-                <div
-                  className={`absolute top-0 right-0 bg-${planColor}-500 text-white px-4 py-1 text-sm font-medium rounded-bl-lg`}
-                >
-                  Tu plan actual
-                </div>
-              )}
-
               {/* Encabezado del plan */}
               <div
-                className={`p-6 ${
-                  isCurrentPlan || isSelected
-                    ? `bg-${planColor}-500 text-white`
-                    : `bg-${planColor}-100 text-${planColor}-800`
-                }`}
+                className={`
+                  p-6 transition-colors duration-300
+                  ${
+                    isCurrentPlan || isSelected
+                      ? `bg-${planColor}-600 text-white`
+                      : `bg-${planColor}-100 text-${planColor}-800 group-hover:bg-${planColor}-600 group-hover:text-white`
+                  }
+                `}
               >
                 <div className="flex items-center mb-2">
                   {planIcons[plan.name as keyof typeof planIcons] || <Star className="w-6 h-6" />}
@@ -229,11 +223,7 @@ export default function PlansPage() {
                 <ul className="space-y-3">
                   {(planFeatures[plan.name as keyof typeof planFeatures] || []).map((feature, index) => (
                     <li key={index} className="flex items-start">
-                      <Check
-                        className={`w-5 h-5 mr-2 flex-shrink-0 ${
-                          isCurrentPlan ? `text-${planColor}-500` : "text-gray-600"
-                        }`}
-                      />
+                      <Check className={`w-5 h-5 mr-2 flex-shrink-0 text-${planColor}-500`} />
                       <span className="text-gray-700">{feature}</span>
                     </li>
                   ))}
@@ -250,16 +240,16 @@ export default function PlansPage() {
                       Plan Activo
                     </button>
                   ) : (
-                    <button
-                      className={`w-full py-2 px-4 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-white font-medium transition-colors`}
+                    <Link
+                      href={`/dashboard/plans/change?planId=${plan.id}`}
+                      className={`w-full py-2 px-4 rounded-lg bg-${planColor}-500 hover:bg-${planColor}-600 text-white font-medium transition-colors text-center block`}
                       onClick={(e) => {
                         e.stopPropagation()
-                        // Aquí iría la lógica para cambiar de plan
-                        alert(`Cambio al plan: ${plan.name}`)
+                        // Aquí puedes cerrar algún modal si es necesario
                       }}
                     >
                       Cambiar a este plan
-                    </button>
+                    </Link>
                   )}
 
                   <button
@@ -392,9 +382,7 @@ export default function PlansPage() {
       {showDetailModal && detailPlan && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div
-              className={`p-6 bg-${getPlanColor(detailPlan.name)}-500 text-white flex justify-between items-start`}
-            >
+            <div className={`p-6 bg-${getPlanColor(detailPlan.name)}-600 text-white flex justify-between items-start`}>
               <div>
                 <h3 className="text-2xl font-bold">{detailPlan.name}</h3>
                 <p className="opacity-90">{detailPlan.description}</p>
@@ -468,16 +456,17 @@ export default function PlansPage() {
                     Plan Activo
                   </button>
                 ) : (
-                  <button
-                    className="flex-1 py-3 px-4 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-white font-medium transition-colors"
-                    onClick={() => {
-                      // Aquí iría la lógica para cambiar de plan
-                      alert(`Cambio al plan: ${detailPlan.name}`)
-                      closeDetailModal()
-                    }}
+                  <Link
+                    href={`/dashboard/plans/change?planId=${detailPlan.id}`}
+                    className={`flex-1 py-3 px-4 rounded-lg bg-${getPlanColor(
+                      detailPlan.name
+                    )}-500 hover:bg-${getPlanColor(
+                      detailPlan.name
+                    )}-600 text-white font-medium transition-colors text-center flex items-center justify-center`}
+                    onClick={closeDetailModal}
                   >
                     Cambiar a este plan
-                  </button>
+                  </Link>
                 )}
                 <button
                   className="py-3 px-4 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
@@ -493,4 +482,3 @@ export default function PlansPage() {
     </div>
   )
 }
-

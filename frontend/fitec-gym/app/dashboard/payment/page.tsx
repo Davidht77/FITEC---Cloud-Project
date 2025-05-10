@@ -230,7 +230,7 @@ export default function PaymentsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link 
-                          href={`/payment/${payment.id}`}
+                          href={`/dashboard/payment/${payment.id}`}
                           className="text-sky-600 hover:text-sky-900 mr-3"
                         >
                           Ver

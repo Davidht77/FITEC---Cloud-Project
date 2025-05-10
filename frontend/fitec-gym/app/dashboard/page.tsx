@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import GymCard from "@/components/GymCard"
 import ProgramSlider from "@/components/ProgramSlider"
+import FeedbackCarousel from "@/components/feedback-carousel"
 import { Dumbbell, Calendar, Trophy, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
@@ -18,18 +19,17 @@ const sedesPorDefecto: Sede[] = [
     id: "1",
     name: "Campus Central",
     address: "Av. Universitaria 1234",
-    phone: "987654321"
+    phone: "987654321",
   },
   {
     id: "2",
     name: "Campus Sur",
     address: "Calle Sur 456",
-    phone: "998877665"
-  }
+    phone: "998877665",
+  },
 ]
 
 export default function DashboardPage() {
-
   const [gymsData, setGymsData] = useState<Sede[]>([])
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function DashboardPage() {
           currentUsers: sede.usuariosActuales || 0,
           maxCapacity: sede.capacidad || 100,
           isOpen: true, // opcional: si lo manejas
-          hours: "6:00 - 22:00" // opcional: si backend lo incluye
+          hours: "6:00 - 22:00", // opcional: si backend lo incluye
         }))
         setGymsData(formateadas)
       })
@@ -60,7 +60,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
-
       {/* Columna principal */}
       <div className="w-full lg:w-2/3 space-y-6">
         {/* Bienvenida */}
@@ -72,14 +71,14 @@ export default function DashboardPage() {
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href="/dashboard/programas"
+              href="/dashboard/programs"
               className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               <Dumbbell className="w-5 h-5" />
               <span>Explorar Programas</span>
             </Link>
             <Link
-              href="/dashboard/calendario"
+              href="/dashboard/calendar"
               className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               <Calendar className="w-5 h-5" />
@@ -101,10 +100,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {gymsData.map((sede) => (
-                  <GymCard key={sede.id} sede={sede} />
-                ))}
-          </div> 
+            {gymsData.map((sede) => (
+              <GymCard key={sede.id} sede={sede} />
+            ))}
+          </div>
         </div>
 
         {/* Próximos Eventos */}
@@ -152,48 +151,8 @@ export default function DashboardPage() {
         {/* Programas Recomendados */}
         <ProgramSlider />
 
-        {/* Estadísticas Personales */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-4 border-b border-gray-100">
-            <h2 className="font-bold text-lg text-gray-900">Tu Actividad</h2>
-          </div>
-
-          <div className="p-4 space-y-4">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-gray-600">Visitas este mes</span>
-                <span className="text-sm font-medium">12/20</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                <div className="bg-sky-600 h-1.5 rounded-full" style={{ width: "60%" }}></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-gray-600">Programas completados</span>
-                <span className="text-sm font-medium">5/10</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                <div className="bg-green-500 h-1.5 rounded-full" style={{ width: "50%" }}></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-gray-600">Puntos de recompensa</span>
-                <span className="text-sm font-medium">320</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                <div className="bg-yellow-500 h-1.5 rounded-full" style={{ width: "32%" }}></div>
-              </div>
-            </div>
-
-            <button className="w-full mt-2 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium transition-colors">
-              Ver Estadísticas Completas
-            </button>
-          </div>
-        </div>
+        {/* Comentarios de usuarios (reemplaza "Tu Actividad") */}
+        <FeedbackCarousel />
       </div>
     </div>
   )
