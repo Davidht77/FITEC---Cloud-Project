@@ -1,18 +1,7 @@
 
-FROM python:3.11
-
-# Establecemos el directorio de trabajo dentro del contenedor
+FROM python:3.12-slim
 WORKDIR /app
-
-
-COPY ./app /app
-COPY .env .env 
-
-
-COPY requirements.txt /app/requirements.txt
-
-
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install python-dotenv boto3 sqlalchemy pymysql faker
-
-CMD ["python", "generate_data.py"]
+COPY Ingesta-MySQL.py .
+CMD ["python", "Ingesta-MySQL.py"]
