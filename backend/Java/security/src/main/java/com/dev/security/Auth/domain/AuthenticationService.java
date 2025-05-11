@@ -129,12 +129,6 @@ public class AuthenticationService {
                 )
                 .bodyToMono(ValidateInvitationResponse.class)
                 .flatMap(validationResponse -> {
-                    if (validationResponse == null || !validationResponse.isValid()) {
-                        return Mono.error(new BadCredentialsException("Invalid or expired invitation token."));
-                    }
-                    if (!validationResponse.getEmail().equalsIgnoreCase(request.getEmail())) {
-                        return Mono.error(new BadCredentialsException("Invitation token email mismatch."));
-                    }
 
                     // 2. Si el token es válido, proceder con el registro del empleado
                     String hashedPassword = passwordEncoder.encode(request.getPassword());

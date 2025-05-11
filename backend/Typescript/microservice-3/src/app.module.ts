@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, NestMiddleware, Injectable, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -8,6 +9,14 @@ import { S3Controller } from './s3/s3.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FeedbackModule } from './feedback/feedback.module';
 import { InvitationsModule } from './invitations/invitations.module';
+@Injectable()
+export class LoggerMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    console.log(`Request... ${req.method} ${req.originalUrl}`);
+    next();
+  }
+}
+
 @Module({
   imports: [
     MongooseModule.forRootAsync({
@@ -25,4 +34,10 @@ import { InvitationsModule } from './invitations/invitations.module';
   controllers: [AppController, S3Controller],
   providers: [AppService, S3Service, ConfigService],
 })
-export class AppModule {}
+export class AppModule implements NestModule { // AppModule debe implementar NestModule
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('*'); // Aplica el middleware a todas las rutas
+  }
+}

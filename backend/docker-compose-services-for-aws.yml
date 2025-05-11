@@ -4,8 +4,6 @@ services:
   nosql-api-service:
     image: davidho2030/backend-nosql-service:latest
     container_name: typescript_service_app
-    ports:
-      - "3000:3000"
     env_file:
       - ./nosql/.env
     networks:
@@ -15,8 +13,6 @@ services:
   employee-api-service:
     image: davidho2030/backend-employee-service:latest
     container_name: python_fastapi_app
-    ports:
-      - "8000:8000"
     env_file:
       - ./employee/.env
     networks:
