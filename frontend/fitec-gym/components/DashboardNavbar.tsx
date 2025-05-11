@@ -6,18 +6,55 @@ import { Menu, Bell, Search, X } from "lucide-react";
 import { useSidebar } from "@/context/DashboardNarvarContext";
 import Link from "next/link";
 
+// Función para decodificar un token JWT
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split(".")[1]
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
+    )
+    return JSON.parse(jsonPayload)
+  } catch (error) {
+    console.error("Error al decodificar el token JWT:", error)
+    return {}
+  }
+}
+
 export default function DashboardNavbar() {
   const { toggleSidebar, sidebarVisible } = useSidebar()
   const [showSearch, setShowSearch] = useState(false);
   const [notifications, setNotifications] = useState(1);
   const [showDropdown, setShowDropdown] = useState(false);
   const [userId, setUserId] = useState<string | null>(null); // 👈 aquí defines userId
+  const [userName, setUserName] = useState<string>("Usuario"); // ✅ nuevo nombre real
 
   const router = useRouter();
 
-  useEffect(() => {
+   useEffect(() => {
+    const token = localStorage.getItem("token");
     const id = localStorage.getItem("id");
     setUserId(id);
+
+    if (token) {
+      try {
+        const decodedToken = parseJwt(token);
+        if (decodedToken.sub) {
+          const emailParts = decodedToken.sub.split("@");
+          const nameFromEmail = emailParts[0].replace(".", " ");
+          const formattedName = nameFromEmail
+            .split(" ")
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+          setUserName(formattedName);
+        }
+      } catch (error) {
+        console.error("Error al obtener el nombre del usuario:", error);
+      }
+    }
   }, []);
 
   const goToProfile = () => {
@@ -101,16 +138,16 @@ export default function DashboardNavbar() {
 
         {/* 👤 Ícono de perfil que redirige usando router */}
         <button
-          onClick={goToProfile}
-          className="flex items-center gap-2 hover:bg-gray-100 p-1 px-2 rounded-full transition-colors"
-        >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-sky-600 to-blue-500 flex items-center justify-center">
-            <span className="text-sm font-semibold text-white">U</span>
-          </div>
-          <span className="text-sm font-medium text-gray-700 hidden md:inline">
-            Usuario
-          </span>
-        </button>
+        onClick={goToProfile}
+        className="flex items-center gap-2 hover:bg-gray-100 p-1 px-2 rounded-full transition-colors"
+      >
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-sky-600 to-blue-500 flex items-center justify-center">
+          <span className="text-sm font-semibold text-white">{userName.charAt(0)}</span>
+        </div>
+        <span className="text-sm font-medium text-gray-700 hidden md:inline">
+          {userName}
+        </span>
+      </button>
       
     </header>
   );

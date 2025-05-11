@@ -1,80 +1,55 @@
-import Image from "next/image";
-import { MapPin, Clock, Users } from 'lucide-react';
-import Link from "next/link";
+import Image from "next/image"
+import Link from "next/link"
+import { MapPin, Phone } from "lucide-react"
 
-interface GymCardProps {
-  sede: {
-    id: string
-    name: string
-    address: string
-    phone: string
-  }
+// Interfaz que coincide con la estructura del backend
+interface Sede {
+  id: string
+  name: string
+  address: string
+  phone: string
+  imagenUrlKey?: string
 }
 
+interface GymCardProps {
+  sede: Sede
+}
 
 export default function GymCard({ sede }: GymCardProps) {
-  const {
-    id,
-    name,
-    address,
-    phone
-  } = sede;
-
-  // Valores simulados por defecto solo para mostrar
-  const image = "/placeholder.svg";
-  const currentUsers = Math.floor(Math.random() * 100); // simulado
-  const maxCapacity = 100;
-  const occupancy = Math.round((currentUsers / maxCapacity) * 100);
-  const isOpen = true; // valor fijo simulado
-  const hours = "6:00 - 22:00";
-
-  let occupancyColor = "bg-green-500";
-  if (occupancy > 80) occupancyColor = "bg-red-500";
-  else if (occupancy > 50) occupancyColor = "bg-yellow-500";
+  // Generar URL de imagen basada en imagenUrlKey o usar placeholder
+  const imageUrl = sede.imagenUrlKey
+    ? `https://tu-bucket-s3.amazonaws.com/${sede.imagenUrlKey}` // Ajusta esta URL según tu configuración
+    : "/modern-gym-interior.png"
 
   return (
-    <Link href={`/dashboard/sedes/${sede.id}`}>
-      <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-        <div className="relative h-40">
-          <Image 
-            src={image || "/placeholder.svg"} 
-            alt={name} 
-            fill 
-            className="object-cover"
-          />
-          <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium text-white ${isOpen ? 'bg-green-500' : 'bg-gray-500'}`}>
-            {isOpen ? 'Abierto' : 'Cerrado'}
-          </div>
-        </div>
-        
-        <div className="p-4">
-          <h3 className="font-bold text-lg text-gray-900">{name}</h3>
-          
-          <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
-            <MapPin className="w-4 h-4" />
-            <span>{address}</span>
-          </div>
-
-          <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
-            <span className="font-semibold">Tel:</span>
-            <span>{phone}</span>
-          </div>
-          
-          <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
-            <Clock className="w-4 h-4" />
-            <span>{hours}</span>
-          </div>
-          
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-1 text-gray-500 text-sm">
-                <Users className="w-4 h-4" />
-                <span>{currentUsers}/{maxCapacity} usuarios</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="relative h-40">
+        <Image src={imageUrl || "/placeholder.svg"} alt={sede.name} fill className="object-cover" />
       </div>
-    </Link>
-  );
+
+      <div className="p-4">
+        <div className="flex justify-between items-start">
+          <h3 className="font-bold text-lg">{sede.name}</h3>
+          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">Abierto</span>
+        </div>
+
+        <div className="flex items-center gap-1 text-gray-600 text-sm mt-1">
+          <MapPin className="w-4 h-4" />
+          <span>{sede.address}</span>
+        </div>
+
+        <div className="flex items-center gap-1 text-gray-600 text-sm mt-1">
+          <Phone className="w-4 h-4" />
+          <span>{sede.phone}</span>
+        </div>
+
+        <Link
+          href={`/dashboard/sedes/${sede.id}`}
+          className="mt-3 block w-full text-center bg-sky-50 hover:bg-sky-100 text-sky-700 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
+          Ver detalles
+        </Link>
+      </div>
+    </div>
+  )
 }

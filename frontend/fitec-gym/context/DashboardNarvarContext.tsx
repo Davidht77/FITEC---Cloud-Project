@@ -1,12 +1,12 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, Dispatch, SetStateAction } from "react"
 
-// 1. Tipo del contexto
+// 1. Tipo del contexto con tipos más específicos
 interface SidebarContextType {
   sidebarVisible: boolean
   toggleSidebar: () => void
-  setSidebarVisible: (value: boolean) => void
+  setSidebarVisible: Dispatch<SetStateAction<boolean>>
   isMobile: boolean
 }
 
@@ -14,7 +14,7 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType>({
   sidebarVisible: true,
   toggleSidebar: () => {},
-  setSidebarVisible: () => {},
+  setSidebarVisible: () => false,
   isMobile: false,
 })
 

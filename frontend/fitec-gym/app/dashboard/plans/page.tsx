@@ -48,7 +48,7 @@ export default function PlansPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [userPlanId, setUserPlanId] = useState<string | null>(null)
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+  // const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [detailPlan, setDetailPlan] = useState<Plan | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
 
@@ -148,9 +148,9 @@ export default function PlansPage() {
   }
 
   // Verificar si un plan es el seleccionado actualmente
-  const isPlanSelected = (planId: string) => {
-    return planId === selectedPlan
-  }
+  // const isPlanSelected = (planId: string) => {
+  //   return planId === selectedPlan
+  // }
 
   // Cerrar modal de detalles
   const closeDetailModal = () => {
@@ -181,7 +181,7 @@ export default function PlansPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         {plans.map((plan) => {
           const isCurrentPlan = isUserPlan(plan.id)
-          const isSelected = isPlanSelected(plan.id)
+          // const isSelected = isPlanSelected(plan.id)
           const planColor = getPlanColor(plan.name)
 
           return (
@@ -194,14 +194,13 @@ export default function PlansPage() {
                 shadow-md hover:shadow-lg hover:scale-105
                 cursor-pointer
               `}
-              onClick={() => setSelectedPlan(isSelected ? null : plan.id)}
             >
               {/* Encabezado del plan */}
               <div
                 className={`
                   p-6 transition-colors duration-300
                   ${
-                    isCurrentPlan || isSelected
+                    isCurrentPlan
                       ? `bg-${planColor}-600 text-white`
                       : `bg-${planColor}-100 text-${planColor}-800 group-hover:bg-${planColor}-600 group-hover:text-white`
                   }
@@ -459,9 +458,9 @@ export default function PlansPage() {
                   <Link
                     href={`/dashboard/plans/change?planId=${detailPlan.id}`}
                     className={`flex-1 py-3 px-4 rounded-lg bg-${getPlanColor(
-                      detailPlan.name
+                      detailPlan.name,
                     )}-500 hover:bg-${getPlanColor(
-                      detailPlan.name
+                      detailPlan.name,
                     )}-600 text-white font-medium transition-colors text-center flex items-center justify-center`}
                     onClick={closeDetailModal}
                   >
