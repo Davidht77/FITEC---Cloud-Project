@@ -1,111 +1,107 @@
-import random
 import uuid
-import csv
+import random
 import boto3
-from faker import Faker
 import pandas as pd
 import mysql.connector
-from sqlalchemy.orm import sessionmaker
-from models import Employees, Sede, RoleEnum
-from database import SessionLocal, engine
-
-
-db_connection = mysql.connector.connect(
-    host='<PRIVATE_IP>',  
-    user='username',  
-    password='password',  
-    database='database_name' 
-)
-
-cursor = db_connection.cursor()
-
+from faker import Faker
 
 fake = Faker()
 
 
-s3_client = boto3.client('s3', aws_access_key_id='your-access-key-id',
-                         aws_secret_access_key='your-secret-access-key', 
-                         aws_session_token='your-session-token')
+db_connection = mysql.connector.connect(
+    host='172.31.19.141',
+    user='root',
+    password='utec',
+    database='ingesta01Py'
+)
+cursor = db_connection.cursor()
+
+# 📦 Configuración S3
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id='TU_ACCESS_KEY_ID',
+    aws_secret_access_key='TU_SECRET_KEY',
+    aws_session_token='TU_SESSION_TOKEN'
+)
+BUCKET_NAME = 'mi-bucket-ingesta-s3'
 
 
-BUCKET_NAME = 'your-bucket-name'  # primeor crear el S3
-
-
-def generate_employees(n=20000):
-    print("Generando empleados...")
-    employees_data = [] 
+def generate_sedes(n=2000):
+    print("Generando sedes...")
+    sedes_data = []
     for _ in range(n):
-        employee = {
+        sede = {
+            'id': str(uuid.uuid4()),
+            'name': fake.company(),
+            'address': fake.address(),
+            'phone': fake.phone_number()
+        }
+        sedes_data.append(sede)
+
+    # Insertar en bloque
+    insert_query = """
+        INSERT INTO sede (id, name, address, phone)
+        VALUES (%s, %s, %s, %s)
+    """
+    values = [(s['id'], s['name'], s['address'], s['phone']) for s in sedes_data]
+    cursor.executemany(insert_query, values)
+    db_connection.commit()
+
+    # Exportar CSV y subir
+    pd.DataFrame(sedes_data).to_csv('sedes.csv', index=False)
+    upload_to_s3('sedes.csv')
+    print(f"{n} sedes insertadas.")
+    return [s['id'] for s in sedes_data]  # Devolver IDs
+
+
+
+def generate_employees(sede_ids, n=20000):
+    print("Generando empleados...")
+    employees_data = []
+    for _ in range(n):
+        emp = {
+            'id': str(uuid.uuid4()),
             'name': fake.first_name(),
             'last_name': fake.last_name(),
             'age': random.randint(18, 65),
             'phone': fake.phone_number(),
             'email': fake.email(),
-            'salary': random.randint(1500, 3500),
+            'salary': round(random.uniform(1500, 3500), 2),
             'role': random.choice(['Trainer', 'Nutricionist', 'Administrator']),
+            'sede_id': random.choice(sede_ids)
         }
-        employees_data.append(employee)
+        employees_data.append(emp)
 
+    insert_query = """
+        INSERT INTO employees (id, name, last_name, age, phone, email, salary, role, sede_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    values = [
+        (e['id'], e['name'], e['last_name'], e['age'], e['phone'],
+         e['email'], e['salary'], e['role'], e['sede_id'])
+        for e in employees_data
+    ]
+    cursor.executemany(insert_query, values)
+    db_connection.commit()
 
-    df_employees = pd.DataFrame(employees_data)
-
-  
-    df_employees.to_csv('employees.csv', index=False)
-
-    # Insertar los empleados en la base de datos MySQL
-    for index, row in df_employees.iterrows():
-        cursor.execute("""
-            INSERT INTO employees (name, last_name, age, phone, email, salary, role)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (row['name'], row['last_name'], row['age'], row['phone'], row['email'], row['salary'], row['role']))
-
-    db_connection.commit()  
-    print(f"{n} empleados generados e inyectados en la base de datos.")
-
-    # Subir el archivo CSV de empleados a S3
+    pd.DataFrame(employees_data).to_csv('employees.csv', index=False)
     upload_to_s3('employees.csv')
+    print(f"{n} empleados insertados.")
 
-def generate_sedes(n=2000):
-    print("Generando sedes...")
-    sedes_data = [] 
-    for _ in range(n):
-        sede = {
-            'name': fake.company(),
-            'address': fake.address(),
-            'phone': fake.phone_number(),
-        }
-        sedes_data.append(sede)
 
- 
-    df_sedes = pd.DataFrame(sedes_data)
-    df_sedes.to_csv('sedes.csv', index=False)
-
-   
-    for index, row in df_sedes.iterrows():
-        cursor.execute("""
-            INSERT INTO sede (name, address, phone)
-            VALUES (%s, %s, %s)
-        """, (row['name'], row['address'], row['phone']))
-
-    db_connection.commit()  
-    print(f"{n} sedes generadas e inyectadas en la base de datos.")
-
-    
-    upload_to_s3('sedes.csv')
-
-# Función para cargar archivos CSV a S3
+# 🔼 SUBIDA A S3
 def upload_to_s3(file_name):
     try:
         s3_client.upload_file(file_name, BUCKET_NAME, file_name)
-        print(f"Archivo {file_name} subido correctamente a S3.")
+        print(f"Subido a S3: {file_name}")
     except Exception as e:
-        print(f"Error al subir el archivo a S3: {e}")
+        print(f"Error al subir {file_name} a S3: {e}")
 
 
-generate_sedes()  
-generate_employees()  
 
-cursor.close()
-db_connection.close()
-
-print("Generación de datos completada.")
+if __name__ == '__main__':
+    sede_ids = generate_sedes()
+    generate_employees(sede_ids)
+    cursor.close()
+    db_connection.close()
+    print("Ingesta finalizada.")
