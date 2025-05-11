@@ -1,6 +1,5 @@
 
-python-dotenv==0.19.2
-boto3==1.18.5
-sqlalchemy==1.4.27
-pymysql==1.0.2
-faker==13.3.4
+mysql-connector-python
+pandas
+boto3
+faker
