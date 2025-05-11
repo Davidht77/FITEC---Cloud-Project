@@ -3,6 +3,7 @@ import random
 import boto3
 import pandas as pd
 import mysql.connector
+import os
 from faker import Faker
 
 fake = Faker()
@@ -11,20 +12,19 @@ fake = Faker()
 db_connection = mysql.connector.connect(
     host='172.31.19.141',
     user='root',
+    port=8005,
     password='utec',
     database='ingesta01Py'
 )
 cursor = db_connection.cursor()
 
-# 📦 Configuración S3
 s3_client = boto3.client(
     's3',
-    aws_access_key_id='TU_ACCESS_KEY_ID',
-    aws_secret_access_key='TU_SECRET_KEY',
-    aws_session_token='TU_SESSION_TOKEN'
+    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+    aws_session_token=os.environ.get('AWS_SESSION_TOKEN')  
 )
 BUCKET_NAME = 'mi-bucket-ingesta-s3'
-
 
 def generate_sedes(n=2000):
     print("Generando sedes...")
@@ -34,11 +34,11 @@ def generate_sedes(n=2000):
             'id': str(uuid.uuid4()),
             'name': fake.company(),
             'address': fake.address(),
-            'phone': fake.phone_number()
+            'phone': fake.phone_number()[:20]
         }
         sedes_data.append(sede)
 
-    # Insertar en bloque
+    
     insert_query = """
         INSERT INTO sede (id, name, address, phone)
         VALUES (%s, %s, %s, %s)
@@ -47,7 +47,7 @@ def generate_sedes(n=2000):
     cursor.executemany(insert_query, values)
     db_connection.commit()
 
-    # Exportar CSV y subir
+  
     pd.DataFrame(sedes_data).to_csv('sedes.csv', index=False)
     upload_to_s3('sedes.csv')
     print(f"{n} sedes insertadas.")
@@ -64,7 +64,7 @@ def generate_employees(sede_ids, n=20000):
             'name': fake.first_name(),
             'last_name': fake.last_name(),
             'age': random.randint(18, 65),
-            'phone': fake.phone_number(),
+            'phone': fake.phone_number()[:20],
             'email': fake.email(),
             'salary': round(random.uniform(1500, 3500), 2),
             'role': random.choice(['Trainer', 'Nutricionist', 'Administrator']),
@@ -89,7 +89,7 @@ def generate_employees(sede_ids, n=20000):
     print(f"{n} empleados insertados.")
 
 
-# 🔼 SUBIDA A S3
+# SUBIDA A S3
 def upload_to_s3(file_name):
     try:
         s3_client.upload_file(file_name, BUCKET_NAME, file_name)
