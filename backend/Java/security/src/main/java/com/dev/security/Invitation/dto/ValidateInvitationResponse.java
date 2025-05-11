@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class ValidateInvitationResponse {
     private boolean isValid;
     private String email;
-    private String invitationType;
 }

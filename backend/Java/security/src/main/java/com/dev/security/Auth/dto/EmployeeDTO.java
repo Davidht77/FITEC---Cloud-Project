@@ -16,18 +16,6 @@ public class EmployeeDTO {
     private String phone;
     private String email;
     private String password;// Contraseña hasheada
-
-    private Double salary;
     private UUID sedeId;
     // otros campos...
-
-    public EmployeeDTO(String name, String lastName, Integer age,String phone, String email, String password, UUID sede_id) {
-        this.name = name;
-        this.lastName = lastName;
-        this.age = age;
-        this.phone = phone;
-        this.email = email;
-        this.password = password;
-        this.sedeId = sede_id;
-    }
 }

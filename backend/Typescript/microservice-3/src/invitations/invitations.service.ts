@@ -36,7 +36,7 @@ export class InvitationsService {
     }
   }
 
-  async validateAndConsume(token: string): Promise<{ isValid: boolean; email?: string; invitationType?: string }> {
+  async validateAndConsume(token: string): Promise<{ isValid: boolean; email?}> {
     const invitation = await this.invitationModel.findOne({ token }).exec();
 
     if (!invitation) {
@@ -56,11 +56,7 @@ export class InvitationsService {
     invitation.usedAt = new Date();
     await invitation.save();
 
-    return { 
-        isValid: true, 
-        email: invitation.invitedEmail,
-        invitationType: invitation.invitationType
-    };
+    return {isValid: true, email: invitation.invitedEmail};
   }
 
   // Podrías tener un método solo para validar sin consumir si es necesario
