@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@view-transition {
-  navigation:auto;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -75,6 +71,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply min-h-screen w-full overflow-x-hidden;
   }
 }
+
