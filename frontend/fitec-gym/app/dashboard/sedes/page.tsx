@@ -34,38 +34,48 @@ export default function SedesPage() {
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    // Función para cargar las sedes desde la API
-    const fetchSedes = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch("http://localhost:8080/sede")
+  const fetchSedes = async () => {
+    try {
+      setLoading(true)
 
-        if (!response.ok) {
-          throw new Error("Error al cargar las sedes")
-        }
-
-        const data = await response.json()
-
-        // Formatear los datos si es necesario
-        const formateadas = data.map((sede: any) => ({
-          id: sede.id,
-          name: sede.name,
-          address: sede.address,
-          phone: sede.phone,
-        }))
-
-        setSedes(formateadas)
-      } catch (error) {
-        console.error("Error fetching sedes:", error)
-        // Usar datos estáticos como fallback
-        setSedes(sedesPorDefecto)
-      } finally {
-        setLoading(false)
+      const token = localStorage.getItem("token")
+      if (!token) {
+        throw new Error("No se encontró el token de sesión")
       }
-    }
 
-    fetchSedes()
-  }, [])
+      const response = await fetch("http://54.83.178.156:8080/sede", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al cargar las sedes")
+      }
+
+      const data = await response.json()
+
+      const formateadas = data.map((sede: any) => ({
+        id: sede.id,
+        name: sede.name,
+        address: sede.address,
+        phone: sede.phone,
+      }))
+
+      setSedes(formateadas)
+    } catch (error) {
+      console.error("Error fetching sedes:", error)
+      setSedes(sedesPorDefecto)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchSedes()
+}, [])
+
 
   // Filtrar sedes según el término de búsqueda
   const filteredSedes = sedes.filter(

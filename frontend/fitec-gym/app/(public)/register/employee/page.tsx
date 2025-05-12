@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from 'lucide-react'
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -13,6 +13,7 @@ type Sede = {
   name: string
   address: string
   phone: string
+  imagenUrlKey?: string | null
 }
 
 // Tipo para la respuesta de validación de invitación
@@ -51,38 +52,80 @@ export default function EmployeeRegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  // Estado para sedes
-  const [sedes, setSedes] = useState<Sede[]>([])
-  const [loading, setLoading] = useState(true)
+  // Estado para registro
   const [registering, setRegistering] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  
+  // Estado para las sedes
+  const [sedes, setSedes] = useState<Sede[]>([])
+  const [loadingSedes, setLoadingSedes] = useState(false)
+  const [sedeError, setSedeError] = useState<string | null>(null)
 
   // API base URL
   const API_BASE_URL = "http://54.83.178.156:8080"
 
-  // Datos estáticos para sedes
+  // Sedes por defecto - usamos estas si falla la petición a la API
   const sedesPorDefecto: Sede[] = [
     {
-      id: "1",
-      name: "Campus Central",
-      address: "Av. Universitaria 1234",
-      phone: "987654321",
+      id: "860aaa3e-5eb5-47a2-90a9-d70d9e379fba",
+      name: "FITEC-Sede Malecon",
+      address: "Jirón Centenario 385",
+      phone: "989 526 488",
+      imagenUrlKey: null
     },
     {
-      id: "2",
-      name: "Campus Sur",
-      address: "Calle Sur 456",
-      phone: "998877665",
+      id: "b3873c7a-7f24-40aa-9316-d194862958ba",
+      name: "FITEC-Principal",
+      address: "UTEC",
+      phone: "123",
+      imagenUrlKey: null
     },
+    {
+      id: "bc321ef3-6ddc-4d0b-b8d9-b75d686673d1",
+      name: "FITEC-Sede Parque Municipal",
+      address: "Av. Pedro de Osma 115",
+      phone: "967 010 165",
+      imagenUrlKey: null
+    }
   ]
+
+  // Cargar sedes desde la API
+  useEffect(() => {
+    const fetchSedes = async () => {
+      setLoadingSedes(true)
+      setSedeError(null)
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/sede`)
+        
+        if (response.ok) {
+          const data: Sede[] = await response.json()
+          console.log("Sedes obtenidas de la API:", data)
+          setSedes(data)
+        } else {
+          console.error("Error al obtener sedes:", response.statusText)
+          setSedeError("No se pudieron cargar las sedes. Usando datos por defecto.")
+          setSedes(sedesPorDefecto)
+        }
+      } catch (error) {
+        console.error("Error al cargar sedes:", error)
+        setSedeError("Error de conexión. Usando datos por defecto.")
+        setSedes(sedesPorDefecto)
+      } finally {
+        setLoadingSedes(false)
+      }
+    }
+    
+    fetchSedes()
+  }, [])
 
   // Validar token de invitación si existe
   useEffect(() => {
     if (invitationToken && !tokenValidated) {
       validateInvitationToken(invitationToken)
     }
-  }, [invitationToken])
+  }, [invitationToken, tokenValidated])
 
   // Función para validar token de invitación
   const validateInvitationToken = async (token: string) => {
@@ -118,35 +161,6 @@ export default function EmployeeRegisterPage() {
       setValidatingToken(false)
     }
   }
-
-  // Cargar sedes
-  useEffect(() => {
-    const fetchSedes = async () => {
-      try {
-        setLoading(true)
-
-        // Intentar cargar sedes
-        try {
-          const sedesResponse = await fetch(`${API_BASE_URL}/sede`)
-          if (sedesResponse.ok) {
-            const sedesData = await sedesResponse.json()
-            setSedes(sedesData)
-          } else {
-            throw new Error("Error al cargar sedes")
-          }
-        } catch (error) {
-          console.error("Usando sedes por defecto:", error)
-          setSedes(sedesPorDefecto)
-        }
-      } catch (error) {
-        console.error("Error al cargar datos:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchSedes()
-  }, [API_BASE_URL])
 
   // Manejar cambios en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -193,12 +207,6 @@ export default function EmployeeRegisterPage() {
       return
     }
 
-    // Validar que el token sea válido
-    if (!tokenValidated && !formData.invitationToken) {
-      setError("Se requiere un token de invitación válido para registrarse como empleado")
-      return
-    }
-
     // Validar que se haya seleccionado una sede
     if (!formData.sedeId) {
       setError("Por favor selecciona una sede")
@@ -218,6 +226,7 @@ export default function EmployeeRegisterPage() {
         password: formData.password,
         sedeId: formData.sedeId,
         invitationToken: formData.invitationToken,
+        userType: "employee", // Añadir userType como "employee" según Postman
       }
 
       console.log("Enviando datos de empleado:", employeeData)
@@ -230,6 +239,9 @@ export default function EmployeeRegisterPage() {
         },
         body: JSON.stringify(employeeData),
       })
+
+      console.log("Respuesta status:", response.status)
+      console.log("Respuesta statusText:", response.statusText)
 
       if (response.ok) {
         // Registro exitoso
@@ -465,21 +477,31 @@ export default function EmployeeRegisterPage() {
             <label htmlFor="sedeId" className="block text-sm font-medium text-gray-700">
               Sede
             </label>
-            <select
-              id="sedeId"
-              name="sedeId"
-              required
-              value={formData.sedeId}
-              onChange={handleChange}
-              className="appearance-none rounded-md relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-yellow-400 focus:border-yellow-400 focus:z-10 sm:text-sm"
-            >
-              <option value="">Selecciona una sede</option>
-              {sedes.map((sede) => (
-                <option key={sede.id} value={sede.id}>
-                  {sede.name}
-                </option>
-              ))}
-            </select>
+            {loadingSedes ? (
+              <div className="flex items-center space-x-2 py-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-sky-600"></div>
+                <span className="text-sm text-gray-500">Cargando sedes...</span>
+              </div>
+            ) : (
+              <>
+                <select
+                  id="sedeId"
+                  name="sedeId"
+                  required
+                  value={formData.sedeId}
+                  onChange={handleChange}
+                  className="appearance-none rounded-md relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-yellow-400 focus:border-yellow-400 focus:z-10 sm:text-sm"
+                >
+                  <option value="">Selecciona una sede</option>
+                  {sedes.map((sede) => (
+                    <option key={sede.id} value={sede.id}>
+                      {sede.name}
+                    </option>
+                  ))}
+                </select>
+                {sedeError && <p className="text-xs text-amber-600 mt-1">{sedeError}</p>}
+              </>
+            )}
           </div>
 
           {/* Términos y condiciones */}

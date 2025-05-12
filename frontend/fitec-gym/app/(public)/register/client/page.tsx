@@ -36,7 +36,7 @@ export default function ClientRegisterPage() {
   const [success, setSuccess] = useState(false)
 
   // API base URL
-  const API_BASE_URL = "http://3.85.78.6:8080"
+  const API_BASE_URL = "http://54.83.178.156:8080"
 
   // Default plans - just names without prices or IDs
   const planes = ["Plan Basico", "Plan Plus", "Plan Premium"]

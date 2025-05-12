@@ -49,74 +49,82 @@ export default function NewPaymentPage() {
 
   // Cargar datos del cliente y su plan asociado
   useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      console.log("🔄 Cargando datos del cliente...")
+
+      const id = localStorage.getItem("id")
+      if (!id) {
+        console.warn("⚠ No se encontró ID del cliente en localStorage")
+        return
+      }
+
+      console.log("🆔 ID del cliente:", id)
+      setClientId(id)
+
       try {
-        setLoading(true)
+        const response = await fetch(`http://54.83.178.156:8080/client/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
 
-        // Obtener ID del cliente desde localStorage
-        const id = localStorage.getItem("id")
-        
-        if (id) {
-          setClientId(id)
+        if (response.ok) {
+          const clientData: Client = await response.json()
+          console.log("✅ Datos del cliente recibidos:", clientData)
           
-          try {
-            const response = await fetch(`http://localhost:8080/client/${id}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            })
+          setClientName(`${clientData.name} ${clientData.lastName}`)
 
-            if (response.ok) {
-              const clientData: Client = await response.json()
-              setClientName(`${clientData.name} ${clientData.lastName}`)
-
-              if (clientData.plan) {
-                setSelectedPlan(clientData.plan.id)
-                setPlans([clientData.plan])
-              }
-            } else {
-              throw new Error("Error al cargar los datos del cliente")
-            }
-          } catch (error) {
-            console.error("Error fetching client data:", error)
-            setError("Error al cargar los datos del cliente")
-
-            // 👇 Fallback con datos falsos para demo
-            const mockPlan: Plan = {
-              id: "1",
-              name: "Plan Básico",
-              description: "Acceso básico al gimnasio",
-              price: 50,
-            }
-
-            const mockClient: Client = {
-              id: id ?? "0",
-              name: "Usuario",
-              lastName: "Demo",
-              age: 20,
-              email: "demo@fitec.com",
-              phone: "987654321",
-              plan: mockPlan,
-            }
-
-            setClientName(`${mockClient.name} ${mockClient.lastName}`)
-            setSelectedPlan(mockPlan.id)
-            setPlans([mockPlan])
-            setError(null) // ← oculta el mensaje de error si mostramos datos falsos
-
+          if (clientData.plan) {
+            console.log("🎯 Plan asociado:", clientData.plan)
+            setSelectedPlan(clientData.plan.id)
+            setPlans([clientData.plan])
+          } else {
+            console.warn("❌ El cliente no tiene un plan asignado")
           }
-
+        } else {
+          throw new Error("Error al cargar los datos del cliente")
         }
       } catch (error) {
-        console.error("Error loading data:", error)
-        setError("Error al cargar los datos necesarios")
-      } finally {
-        setLoading(false)
-      }
-    }
+        console.error("❌ Error al hacer fetch del cliente:", error)
 
-    fetchData()
-  }, [])
+        // Fallback para pruebas
+        const mockPlan: Plan = {
+          id: "1",
+          name: "Plan Básico",
+          description: "Acceso básico al gimnasio",
+          price: 50,
+        }
+
+        const mockClient: Client = {
+          id: id ?? "0",
+          name: "Usuario",
+          lastName: "Demo",
+          age: 20,
+          email: "demo@fitec.com",
+          phone: "987654321",
+          plan: mockPlan,
+        }
+
+        console.log("🧪 Usando datos de prueba:", mockClient)
+        setClientName(`${mockClient.name} ${mockClient.lastName}`)
+        setPlans([mockPlan])
+        setSelectedPlan(mockPlan.id) // ✅ MUY IMPORTANTE
+        setError(null)
+      }
+    } catch (error) {
+      console.error("❌ Error general al cargar datos:", error)
+      setError("Error al cargar los datos necesarios")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchData()
+}, [])
+
+
 
   // Obtener el precio del plan seleccionado
   const getSelectedPlanPrice = () => {
@@ -126,7 +134,9 @@ export default function NewPaymentPage() {
 
   // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  e.preventDefault()
+  console.log("⏳ Enviando formulario de pago...") // 🔍
+
 
     if (!clientId) {
       setError("No se pudo identificar al cliente")

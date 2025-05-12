@@ -32,7 +32,7 @@ export default function PaymentDetailPage() {
         setLoading(true)
         setError(null)
         
-        const response = await fetch(`http://localhost:8080/payment/${id}`, {
+        const response = await fetch(`http://54.83.178.156:8080/payment/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }

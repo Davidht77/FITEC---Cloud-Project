@@ -5,6 +5,11 @@ import Link from "next/link"
 import { ArrowLeft, Search, Loader2 } from "lucide-react"
 
 // Definición de tipos basados en el esquema del backend
+type Category = {
+  slug: string
+  name: string
+}
+
 type Question = {
   _id: string
   question: string
@@ -15,6 +20,15 @@ type Question = {
 }
 
 // Añadir datos de ejemplo para cuando no hay respuesta del backend
+const mockCategories: Category[] = [
+  { slug: "general", name: "Información General" },
+  { slug: "membresia", name: "Membresía y Pagos" },
+  { slug: "clases", name: "Clases y Programas" },
+  { slug: "instalaciones", name: "Instalaciones" },
+  { slug: "horarios", name: "Horarios y Reservas" },
+  { slug: "instructores", name: "Instructores" },
+]
+
 const mockQuestions: Question[] = [
   {
     _id: "1",
@@ -61,61 +75,6 @@ const mockQuestions: Question[] = [
     category_name: "Clases y Programas",
     order: 1,
   },
-  {
-    _id: "6",
-    question: "¿Necesito reservar para asistir a una clase?",
-    answer:
-      "Sí, es necesario reservar tu lugar en las clases con anticipación a través de nuestra aplicación o sitio web. Las reservas se abren 48 horas antes de cada clase.",
-    category_slug: "clases",
-    category_name: "Clases y Programas",
-    order: 2,
-  },
-  {
-    _id: "7",
-    question: "¿Qué instalaciones tienen disponibles?",
-    answer:
-      "Nuestras sedes cuentan con áreas de pesas, cardio, salones para clases grupales, vestidores con duchas, y algunas sedes tienen piscina y sauna.",
-    category_slug: "instalaciones",
-    category_name: "Instalaciones",
-    order: 1,
-  },
-  {
-    _id: "8",
-    question: "¿Cuáles son los horarios de atención?",
-    answer:
-      "La mayoría de nuestras sedes operan de lunes a viernes de 6:00 a 22:00, sábados de 8:00 a 20:00 y domingos de 9:00 a 18:00. Consulta los horarios específicos de cada sede.",
-    category_slug: "horarios",
-    category_name: "Horarios y Reservas",
-    order: 1,
-  },
-  {
-    _id: "9",
-    question: "¿Cómo puedo conocer a los instructores?",
-    answer:
-      "Puedes ver los perfiles de nuestros instructores en la sección 'Instructores' de nuestra aplicación o sitio web. También puedes conocerlos personalmente asistiendo a sus clases.",
-    category_slug: "instructores",
-    category_name: "Instructores",
-    order: 1,
-  },
-  {
-    _id: "10",
-    question: "¿Puedo cancelar mi membresía en cualquier momento?",
-    answer:
-      "Sí, puedes cancelar tu membresía en cualquier momento. Sin embargo, dependiendo del plan que hayas elegido, puede aplicar un período mínimo de permanencia o una tarifa de cancelación anticipada.",
-    category_slug: "membresia",
-    category_name: "Membresía y Pagos",
-    order: 3,
-  },
-]
-
-// Datos de ejemplo para las otras categorías
-const mockCategories = [
-  { slug: "general", name: "Información General" },
-  { slug: "membresia", name: "Membresía y Pagos" },
-  { slug: "clases", name: "Clases y Programas" },
-  { slug: "instalaciones", name: "Instalaciones" },
-  { slug: "horarios", name: "Horarios y Reservas" },
-  { slug: "instructores", name: "Instructores" },
 ]
 
 export default function CategoryFAQPage({ params }: { params: { slug: string } }) {
@@ -124,64 +83,89 @@ export default function CategoryFAQPage({ params }: { params: { slug: string } }
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryName, setCategoryName] = useState("")
-  const [otherCategories, setOtherCategories] = useState(mockCategories.filter((c) => c.slug !== params.slug))
+  const [otherCategories, setOtherCategories] = useState<Category[]>([])
 
   // Cargar preguntas de la categoría específica
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`http://localhost:8080/faq?slug=${params.slug}`)
-        let data: Question[] = []
+        const token = localStorage.getItem("token")
 
-        if (response.ok) {
-          data = await response.json()
+        if (!token) {
+          console.log("No se encontró token de autenticación, usando datos de ejemplo")
+          // Filtrar los datos de ejemplo por la categoría actual
+          const filteredMockData = mockQuestions.filter((q) => q.category_slug === params.slug)
+          setQuestions(filteredMockData)
+
+          if (filteredMockData.length > 0) {
+            setCategoryName(filteredMockData[0].category_name)
+          } else {
+            const categoryFromMock = mockCategories.find((c) => c.slug === params.slug)
+            setCategoryName(categoryFromMock?.name || "Categoría")
+          }
+
+          setOtherCategories(mockCategories.filter((c) => c.slug !== params.slug))
+          setLoading(false)
+          return
         }
 
-        // Si no hay datos o la respuesta está vacía, filtrar los datos de ejemplo por la categoría actual
-        if (!data || data.length === 0) {
-          console.log(`Usando preguntas de ejemplo para la categoría ${params.slug}`)
-          data = mockQuestions.filter((q) => q.category_slug === params.slug)
+        // Obtener preguntas por categoría
+        const response = await fetch(`http://54.83.178.156:8080/faq?slug=${params.slug}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-          // Si aún no hay datos después de filtrar, mostrar un mensaje amigable
-          if (data.length === 0) {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("No autorizado. Por favor, inicia sesión nuevamente.")
+          } else {
+            throw new Error(`Error ${response.status}: ${response.statusText}`)
+          }
+        }
+
+        const data = await response.json()
+
+        // Si hay datos, establecerlos
+        if (data && data.length > 0) {
+          setQuestions(data)
+          setCategoryName(data[0].category_name)
+        } else {
+          // Si no hay datos, usar datos de ejemplo
+          const filteredMockData = mockQuestions.filter((q) => q.category_slug === params.slug)
+          setQuestions(filteredMockData)
+
+          if (filteredMockData.length > 0) {
+            setCategoryName(filteredMockData[0].category_name)
+          } else {
+            const categoryFromMock = mockCategories.find((c) => c.slug === params.slug)
+            setCategoryName(categoryFromMock?.name || "Categoría")
             setError("No hay preguntas disponibles para esta categoría")
           }
         }
 
-        setQuestions(data)
+        // Obtener todas las categorías para mostrar "Otras categorías"
+        const categoriesResponse = await fetch("http://54.83.178.156:8080/faq?slug=&name=", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-        // Establecer el nombre de la categoría desde la primera pregunta
-        if (data.length > 0) {
-          setCategoryName(data[0].category_name)
-        } else {
-          // Si no hay preguntas, intentar obtener el nombre de la categoría de los datos de ejemplo
-          const categoryFromMock = mockQuestions.find((q) => q.category_slug === params.slug)
-          if (categoryFromMock) {
-            setCategoryName(categoryFromMock.category_name)
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json()
+          if (categoriesData && categoriesData.length > 0) {
+            setOtherCategories(categoriesData.filter((c: Category) => c.slug !== params.slug))
           } else {
-            setCategoryName("Categoría")
+            setOtherCategories(mockCategories.filter((c) => c.slug !== params.slug))
           }
-        }
-
-        // Intentar cargar otras categorías
-        try {
-          const categoriesResponse = await fetch("http://localhost:8080/faq?slug=&name=")
-          if (categoriesResponse.ok) {
-            const categoriesData = await categoriesResponse.json()
-            if (categoriesData && categoriesData.length > 0) {
-              setOtherCategories(categoriesData.filter((c: any) => c.slug !== params.slug))
-            }
-          }
-        } catch (err) {
-          console.log("Usando categorías de ejemplo para 'Otras categorías'")
-          // Ya tenemos categorías de ejemplo cargadas por defecto
+        } else {
+          setOtherCategories(mockCategories.filter((c) => c.slug !== params.slug))
         }
       } catch (err) {
         console.error("Error fetching category questions:", err)
-        console.log(`Usando datos de ejemplo para la categoría ${params.slug} debido a un error`)
 
-        // Filtrar los datos de ejemplo por la categoría actual
+        // Usar datos de ejemplo como fallback
         const filteredMockData = mockQuestions.filter((q) => q.category_slug === params.slug)
         setQuestions(filteredMockData)
 
@@ -189,9 +173,12 @@ export default function CategoryFAQPage({ params }: { params: { slug: string } }
           setCategoryName(filteredMockData[0].category_name)
           setError(null) // No mostrar error al usuario ya que tenemos datos de respaldo
         } else {
-          setCategoryName("Categoría")
+          const categoryFromMock = mockCategories.find((c) => c.slug === params.slug)
+          setCategoryName(categoryFromMock?.name || "Categoría")
           setError("No hay preguntas disponibles para esta categoría")
         }
+
+        setOtherCategories(mockCategories.filter((c) => c.slug !== params.slug))
       } finally {
         setLoading(false)
       }
@@ -211,24 +198,6 @@ export default function CategoryFAQPage({ params }: { params: { slug: string } }
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md w-full text-center">
-          <h2 className="text-xl font-bold text-red-700 mb-2">Error</h2>
-          <p className="text-red-600 mb-4">{error}</p>
-          <Link
-            href="/dashboard/faq"
-            className="inline-flex items-center px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver a Preguntas Frecuentes
-          </Link>
-        </div>
       </div>
     )
   }
@@ -263,10 +232,18 @@ export default function CategoryFAQPage({ params }: { params: { slug: string } }
         </div>
       </div>
 
+      {/* Mensaje de error si no hay preguntas */}
+      {error && (
+        <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-6 text-center mb-8">
+          <h3 className="text-lg font-medium text-yellow-800 mb-2">Información</h3>
+          <p className="text-yellow-700">{error}</p>
+        </div>
+      )}
+
       {/* Lista de preguntas */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        {filteredQuestions.length > 0 ? (
-          filteredQuestions.map((question, index) => (
+      {filteredQuestions.length > 0 && (
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+          {filteredQuestions.map((question, index) => (
             <details
               key={question._id}
               className={`group p-6 ${index !== filteredQuestions.length - 1 ? "border-b border-gray-100" : ""}`}
@@ -282,14 +259,19 @@ export default function CategoryFAQPage({ params }: { params: { slug: string } }
                 <p>{question.answer}</p>
               </div>
             </details>
-          ))
-        ) : (
-          <div className="p-6 text-center">
-            <h3 className="text-lg font-medium text-gray-800 mb-2">No se encontraron resultados</h3>
-            <p className="text-gray-600">No hay preguntas que coincidan con tu búsqueda. Intenta con otros términos.</p>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* Mensaje si no hay resultados de búsqueda */}
+      {filteredQuestions.length === 0 && !error && (
+        <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-6 text-center mb-8">
+          <h3 className="text-lg font-medium text-yellow-800 mb-2">No se encontraron resultados</h3>
+          <p className="text-yellow-700">
+            No hay preguntas que coincidan con tu búsqueda. Intenta con otros términos o consulta otras categorías.
+          </p>
+        </div>
+      )}
 
       {/* Otras categorías */}
       <div className="mt-12">

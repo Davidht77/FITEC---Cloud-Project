@@ -75,56 +75,11 @@ const mockQuestions: Question[] = [
     category_name: "Clases y Programas",
     order: 1,
   },
-  {
-    _id: "6",
-    question: "¿Necesito reservar para asistir a una clase?",
-    answer:
-      "Sí, es necesario reservar tu lugar en las clases con anticipación a través de nuestra aplicación o sitio web. Las reservas se abren 48 horas antes de cada clase.",
-    category_slug: "clases",
-    category_name: "Clases y Programas",
-    order: 2,
-  },
-  {
-    _id: "7",
-    question: "¿Qué instalaciones tienen disponibles?",
-    answer:
-      "Nuestras sedes cuentan con áreas de pesas, cardio, salones para clases grupales, vestidores con duchas, y algunas sedes tienen piscina y sauna.",
-    category_slug: "instalaciones",
-    category_name: "Instalaciones",
-    order: 1,
-  },
-  {
-    _id: "8",
-    question: "¿Cuáles son los horarios de atención?",
-    answer:
-      "La mayoría de nuestras sedes operan de lunes a viernes de 6:00 a 22:00, sábados de 8:00 a 20:00 y domingos de 9:00 a 18:00. Consulta los horarios específicos de cada sede.",
-    category_slug: "horarios",
-    category_name: "Horarios y Reservas",
-    order: 1,
-  },
-  {
-    _id: "9",
-    question: "¿Cómo puedo conocer a los instructores?",
-    answer:
-      "Puedes ver los perfiles de nuestros instructores en la sección 'Instructores' de nuestra aplicación o sitio web. También puedes conocerlos personalmente asistiendo a sus clases.",
-    category_slug: "instructores",
-    category_name: "Instructores",
-    order: 1,
-  },
-  {
-    _id: "10",
-    question: "¿Puedo cancelar mi membresía en cualquier momento?",
-    answer:
-      "Sí, puedes cancelar tu membresía en cualquier momento. Sin embargo, dependiendo del plan que hayas elegido, puede aplicar un período mínimo de permanencia o una tarifa de cancelación anticipada.",
-    category_slug: "membresia",
-    category_name: "Membresía y Pagos",
-    order: 3,
-  },
 ]
 
 export default function FAQPage() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [questions, setQuestions] = useState<Question[]>([])
+  const [categories, setCategories] = useState<Category[]>(mockCategories)
+  const [questions, setQuestions] = useState<Question[]>(mockQuestions)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -134,44 +89,100 @@ export default function FAQPage() {
     const fetchData = async () => {
       try {
         setLoading(true)
+        const token = localStorage.getItem("token")
 
-        // Obtener todas las categorías únicas
-        const categoriesResponse = await fetch("http://localhost:8080/faq?slug=&name=")
-        let categoriesData: Category[] = []
-
-        if (categoriesResponse.ok) {
-          categoriesData = await categoriesResponse.json()
+        if (!token) {
+          console.log("No se encontró token de autenticación, usando datos de ejemplo")
+          setLoading(false)
+          return
         }
-
-        // Si no hay datos o la respuesta está vacía, usar datos de ejemplo
-        if (!categoriesData || categoriesData.length === 0) {
-          console.log("Usando categorías de ejemplo porque no hay datos del backend")
-          categoriesData = mockCategories
-        }
-
-        setCategories(categoriesData)
 
         // Obtener todas las preguntas
-        const questionsResponse = await fetch("http://localhost:8080/faq")
-        let questionsData: Question[] = []
+        const questionsResponse = await fetch("http://54.83.178.156:8080/faq", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-        if (questionsResponse.ok) {
-          questionsData = await questionsResponse.json()
+        if (!questionsResponse.ok) {
+          if (questionsResponse.status === 401) {
+            console.log("Error de autenticación, usando datos de ejemplo")
+          } else {
+            console.log(`Error ${questionsResponse.status}, usando datos de ejemplo`)
+          }
+          return
         }
 
-        // Si no hay datos o la respuesta está vacía, usar datos de ejemplo
-        if (!questionsData || questionsData.length === 0) {
-          console.log("Usando preguntas de ejemplo porque no hay datos del backend")
-          questionsData = mockQuestions
-        }
+        const questionsData = await questionsResponse.json()
 
-        setQuestions(questionsData)
+        if (questionsData && questionsData.length > 0) {
+          setQuestions(questionsData)
+
+          // Obtener categorías únicas
+          try {
+            const categoriesResponse = await fetch("http://54.83.178.156:8080/faq?slug=&name=", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            })
+
+            if (categoriesResponse.ok) {
+              const categoriesData = await categoriesResponse.json()
+              if (categoriesData && categoriesData.length > 0) {
+                setCategories(categoriesData)
+              } else {
+                // Si no hay categorías, extraerlas manualmente de las preguntas
+                const uniqueCategoriesMap = new Map<string, Category>()
+
+                questionsData.forEach((q: Question) => {
+                  if (!uniqueCategoriesMap.has(q.category_slug)) {
+                    uniqueCategoriesMap.set(q.category_slug, {
+                      slug: q.category_slug,
+                      name: q.category_name,
+                    })
+                  }
+                })
+
+                const extractedCategories: Category[] = Array.from(uniqueCategoriesMap.values())
+                setCategories(extractedCategories)
+              }
+            } else {
+              // Si falla la obtención de categorías, extraerlas de las preguntas
+              const uniqueCategoriesMap = new Map<string, Category>()
+
+              questionsData.forEach((q: Question) => {
+                if (!uniqueCategoriesMap.has(q.category_slug)) {
+                  uniqueCategoriesMap.set(q.category_slug, {
+                    slug: q.category_slug,
+                    name: q.category_name,
+                  })
+                }
+              })
+
+              const extractedCategories: Category[] = Array.from(uniqueCategoriesMap.values())
+              setCategories(extractedCategories)
+            }
+          } catch (error) {
+            console.error("Error fetching categories:", error)
+            // Extraer categorías de las preguntas como fallback
+            const uniqueCategoriesMap = new Map<string, Category>()
+
+            questionsData.forEach((q: Question) => {
+              if (!uniqueCategoriesMap.has(q.category_slug)) {
+                uniqueCategoriesMap.set(q.category_slug, {
+                  slug: q.category_slug,
+                  name: q.category_name,
+                })
+              }
+            })
+
+            const extractedCategories: Category[] = Array.from(uniqueCategoriesMap.values())
+            setCategories(extractedCategories)
+          }
+        }
       } catch (err) {
         console.error("Error fetching FAQ data:", err)
-        console.log("Usando datos de ejemplo debido a un error")
-        setCategories(mockCategories)
-        setQuestions(mockQuestions)
-        setError(null) // No mostrar error al usuario ya que tenemos datos de respaldo
+        // No mostrar error al usuario ya que tenemos datos de respaldo
       } finally {
         setLoading(false)
       }
@@ -206,23 +217,6 @@ export default function FAQPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md w-full text-center">
-          <h2 className="text-xl font-bold text-red-700 mb-2">Error</h2>
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
-          >
-            Intentar nuevamente
-          </button>
-        </div>
       </div>
     )
   }
@@ -277,7 +271,7 @@ export default function FAQPage() {
             {category.questions.slice(0, 3).map((question, index) => (
               <details
                 key={question._id}
-                className={`group p-4 ${index !== category.questions.length - 1 ? "border-b border-gray-100" : ""}`}
+                className={`group p-4 ${index !== category.questions.length - 1 && index < 2 ? "border-b border-gray-100" : ""}`}
               >
                 <summary className="list-none flex justify-between items-center cursor-pointer">
                   <h3 className="font-medium text-gray-800">{question.question}</h3>
