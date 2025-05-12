@@ -57,7 +57,7 @@ export default function PlansPage() {
     const fetchPlans = async () => {
       try {
         setLoading(true)
-        const response = await fetch("http://localhost:8080/plan")
+        const response = await fetch("http://54.83.178.156:8080/plan")
 
         if (!response.ok) {
           throw new Error("Error al cargar los planes")

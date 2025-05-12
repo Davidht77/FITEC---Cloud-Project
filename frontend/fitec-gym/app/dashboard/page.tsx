@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const [gymsData, setGymsData] = useState<Sede[]>([])
 
   useEffect(() => {
-    fetch("http://localhost:8080/sede") // o la URL real en la nube
+    fetch("http://3.85.78.6:8080/sede") // o la URL real en la nube
       .then((res) => {
         if (!res.ok) throw new Error("Falló la API")
         return res.json()
