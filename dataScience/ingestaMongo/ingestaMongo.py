@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_HOST = os.getenv("MONGO_HOST", "172.31.19.141")  # IP privada de MV Base de Datos
+MONGO_HOST = os.getenv("MONGO_HOST", "172.31.19.141")  
 MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
