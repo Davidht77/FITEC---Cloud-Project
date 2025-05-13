@@ -148,56 +148,67 @@ export default function PerfilPage() {
 
       {/* Encabezado del perfil */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="bg-gradient-to-r from-sky-600 to-blue-700 h-32 md:h-48 relative">
+        {/* Banner sin contenido superpuesto */}
+        <div className="bg-gradient-to-r from-sky-600 to-blue-700 h-32 md:h-40 relative">
           <button className="absolute bottom-2 right-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-2 rounded-full text-white">
             <Camera className="w-5 h-5" />
           </button>
         </div>
-        <div className="px-4 pb-4 pt-0 md:px-6 md:pb-6 flex flex-col md:flex-row gap-4 items-start md:items-end -mt-12">
-          <div className="relative">
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white bg-white overflow-hidden">
-              <Image
-                src={displayUser.avatar || "/placeholder.svg?height=128&width=128&query=person"}
-                alt={`${displayUser.name} ${displayUser.lastName}`}
-                width={128}
-                height={128}
-                className="object-cover"
-              />
-            </div>
-            <button className="absolute bottom-0 right-0 bg-sky-100 hover:bg-sky-200 p-1.5 rounded-full text-sky-600 border-2 border-white">
-              <Edit className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {displayUser.name} {displayUser.lastName}
-            </h1>
-            <p className="text-gray-600 flex items-center gap-1 mt-1">
-              <Mail className="w-4 h-4" />
-              {displayUser.email}
-            </p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <span className="bg-sky-100 text-sky-800 px-2 py-1 rounded-full text-xs font-medium">
-                ID: {displayUser.id.substring(0, 8)}...
-              </span>
-              {displayUser.plan && (
-                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
-                  {displayUser.plan.name}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-2 self-end">
-            <Link href={`/dashboard/perfil/edit`}>
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg transition">
-                Editar perfil
+
+        {/* Avatar y contenido del perfil completamente debajo del banner */}
+        <div className="px-4 md:px-6 pb-4 pt-0 flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center -mt-16 md:-mt-20">
+            <div className="relative">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white bg-white overflow-hidden">
+                <Image
+                  src={displayUser.avatar || "/placeholder.svg?height=128&width=128&query=person"}
+                  alt={`${displayUser.name} ${displayUser.lastName}`}
+                  width={128}
+                  height={128}
+                  className="object-cover"
+                />
+              </div>
+              <button className="absolute bottom-0 right-0 bg-sky-100 hover:bg-sky-200 p-1.5 rounded-full text-sky-600 border-2 border-white">
+                <Edit className="w-4 h-4" />
               </button>
-            </Link>
+            </div>
+          </div>
+
+          {/* Información del usuario completamente debajo del avatar */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-2">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {displayUser.name} {displayUser.lastName}
+              </h1>
+              <p className="text-gray-600 flex items-center gap-1 mt-1">
+                <Mail className="w-4 h-4" />
+                {displayUser.email}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <span className="bg-sky-100 text-sky-800 px-2 py-1 rounded-full text-xs font-medium">
+                  ID: {displayUser.id.substring(0, 8)}...
+                </span>
+                {displayUser.plan && (
+                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                    {displayUser.plan.name}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Botón de editar */}
+            <div className="mt-4 md:mt-0">
+              <Link href={`/dashboard/perfil/edit`}>
+                <button className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg transition">
+                  Editar perfil
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Pestañas */}
-        <div className="border-t border-gray-100 px-4 md:px-6">
+        <div className="border-t border-gray-100 px-4 md:px-6 mt-2">
           <div className="flex overflow-x-auto space-x-4">
             <button
               onClick={() => setActiveTab("perfil")}

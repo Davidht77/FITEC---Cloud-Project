@@ -34,6 +34,28 @@ type ClientRequestDto = {
   planId: string
 }
 
+// Planes de fallback para usar si la API falla
+const fallbackPlans: Record<string, Plan> = {
+  "1": {
+    id: "1",
+    name: "Plan Básico",
+    description: "Acceso básico al gimnasio",
+    price: 50,
+  },
+  "2": {
+    id: "2",
+    name: "Plan Plus",
+    description: "Acceso completo + clases grupales",
+    price: 80,
+  },
+  "3": {
+    id: "3",
+    name: "Plan Premium",
+    description: "Todo incluido + entrenador personal",
+    price: 120,
+  },
+}
+
 export default function ChangePlanConfirmationPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -47,106 +69,102 @@ export default function ChangePlanConfirmationPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [dataFetched, setDataFetched] = useState(false)
 
-
-    // Fallback de planes por ID
-    const fallbackPlans: Record<string, Plan> = {
-    "1": {
-        id: "1",
-        name: "Plan Básico",
-        description: "Acceso básico al gimnasio",
-        price: 50,
-    },
-    "2": {
-        id: "2",
-        name: "Plan Plus",
-        description: "Acceso completo + clases grupales",
-        price: 80,
-    },
-    "3": {
-        id: "3",
-        name: "Plan Premium",
-        description: "Todo incluido + entrenador personal",
-        price: 120,
-    },
-    }
-
-  // Cargar datos del cliente y planes
+  // Cargar datos del cliente y planes - optimizado para evitar múltiples re-renders
   useEffect(() => {
-    const clientId = localStorage.getItem("id")
+    // Si ya hemos cargado los datos o no tenemos planId, no hacemos nada
+    if (dataFetched || !planId) return
+
     const fetchData = async () => {
       try {
         setLoading(true)
 
         // Obtener ID del cliente desde localStorage
         const clientId = localStorage.getItem("id")
+        const token = localStorage.getItem("token")
 
         if (!clientId) {
           setError("No se pudo identificar al cliente")
           return
         }
 
-        if (!planId) {
-          setError("No se especificó el plan a cambiar")
+        if (!token) {
+          setError("No se encontró el token de autenticación")
           return
         }
 
-        // Obtener datos del cliente
-        const clientResponse = await fetch(`http://localhost:8080/client/${clientId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
+        // Hacer ambas peticiones en paralelo para mejorar el rendimiento
+        const [clientResponse, planResponse] = await Promise.all([
+          fetch(`http://54.83.178.156:8080/client/${clientId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          fetch(`http://54.83.178.156:8080/plan/${planId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ])
 
-        if (!clientResponse.ok) {
+        // Procesar respuesta del cliente
+        if (clientResponse.ok) {
+          const clientData: Client = await clientResponse.json()
+          setClient(clientData)
+          setCurrentPlan(clientData.plan)
+        } else {
           throw new Error("Error al cargar los datos del cliente")
         }
 
-        const clientData: Client = await clientResponse.json()
-        setClient(clientData)
-        setCurrentPlan(clientData.plan)
+        // Procesar respuesta del plan
+        if (planResponse.ok) {
+          const planData: Plan = await planResponse.json()
+          setNewPlan(planData)
 
-        // Obtener datos del nuevo plan
-        const planResponse = await fetch(`http://localhost:8080/plan/${planId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-
-        if (!planResponse.ok) {
+          // Verificar que no sea el mismo plan
+          if (client?.plan && client.plan.id === planData.id) {
+            setError("Ya tienes este plan activo. Por favor, selecciona un plan diferente.")
+          }
+        } else {
           throw new Error("Error al cargar los datos del plan")
         }
 
-        const planData: Plan = await planResponse.json()
-        setNewPlan(planData)
+        // Marcar que los datos ya fueron cargados
+        setDataFetched(true)
       } catch (error) {
         console.error("Error loading data:", error)
         setError("Error al cargar los datos necesarios")
+
+        // Datos de fallback
+        const clientId = localStorage.getItem("id") ?? "0"
         const mockClient: Client = {
-        id: clientId ?? "0",
-        name: "Usuario",
-        lastName: "Demo",
-        age: 20,
-        email: "demo@fitec.com",
-        phone: "987654321",
-        plan: null,
-    }
-    setClient(mockClient)
-    setCurrentPlan(null)
+          id: clientId,
+          name: "Usuario",
+          lastName: "Demo",
+          age: 20,
+          email: "demo@fitec.com",
+          phone: "987654321",
+          plan: fallbackPlans["1"],
+        }
+        setClient(mockClient)
+        setCurrentPlan(mockClient.plan)
 
-    const fallbackPlan = fallbackPlans[planId ?? ""] ?? fallbackPlans["1"]
-    setNewPlan(fallbackPlan)
+        const fallbackPlan = fallbackPlans[planId] ?? fallbackPlans["2"]
+        setNewPlan(fallbackPlan)
 
-    setError(null)  // 👈 Esto limpia el mensaje rojo una vez cargado el mock
+        // Limpiar el error si usamos datos de fallback
+        setError(null)
 
-
+        // Marcar que los datos ya fueron cargados (aunque sean de fallback)
+        setDataFetched(true)
       } finally {
         setLoading(false)
       }
     }
 
     fetchData()
-  }, [planId])
+  }, [planId, dataFetched, client])
 
   // Manejar la confirmación del cambio de plan
   const handleConfirmChange = async () => {
@@ -167,7 +185,7 @@ export default function ChangePlanConfirmationPage() {
       }
 
       // Enviar solicitud PUT para actualizar el cliente
-      const response = await fetch(`http://localhost:8080/client/${client.id}`, {
+      const response = await fetch(`http://54.83.178.156:8080/client/${client.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -204,8 +222,8 @@ export default function ChangePlanConfirmationPage() {
     return "gray"
   }
 
-  // Mostrar pantalla de carga
-  if (loading) {
+  // Mostrar pantalla de carga solo durante la carga inicial
+  if (loading && !dataFetched) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
@@ -250,6 +268,7 @@ export default function ChangePlanConfirmationPage() {
   }
 
   const newPlanColor = getPlanColor(newPlan.name)
+  const currentPlanColor = currentPlan ? getPlanColor(currentPlan.name) : "gray"
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -296,13 +315,21 @@ export default function ChangePlanConfirmationPage() {
             <div className="p-6">
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 {/* Plan actual */}
-                <div className="flex-1 border rounded-lg p-4 bg-gray-50">
-                  <h3 className="font-medium text-gray-500 mb-2">Plan Actual</h3>
+                <div
+                  className={`flex-1 border rounded-lg p-4 ${currentPlan ? `bg-${currentPlanColor}-50 border-${currentPlanColor}-200` : "bg-gray-50"}`}
+                >
+                  <h3 className={`font-medium ${currentPlan ? `text-${currentPlanColor}-700` : "text-gray-500"} mb-2`}>
+                    Plan Actual
+                  </h3>
                   {currentPlan ? (
                     <>
                       <div className="font-bold text-lg mb-1">{currentPlan.name}</div>
                       <div className="text-gray-600 mb-2">{currentPlan.description}</div>
-                      <div className="text-lg font-bold text-gray-900">${currentPlan.price}/mes</div>
+                      <div
+                        className={`text-lg font-bold ${currentPlan ? `text-${currentPlanColor}-600` : "text-gray-900"}`}
+                      >
+                        ${currentPlan.price}/mes
+                      </div>
                     </>
                   ) : (
                     <div className="text-gray-500 italic">Sin plan activo</div>
@@ -484,7 +511,9 @@ export default function ChangePlanConfirmationPage() {
 
                 <div className="flex justify-between">
                   <span className="text-gray-600">Plan actual:</span>
-                  <span className="font-medium">{currentPlan?.name || "Ninguno"}</span>
+                  <span className={`font-medium ${currentPlan ? `text-${currentPlanColor}-600` : ""}`}>
+                    {currentPlan?.name || "Ninguno"}
+                  </span>
                 </div>
 
                 <div className="flex justify-between">
@@ -514,7 +543,7 @@ export default function ChangePlanConfirmationPage() {
                 <button
                   onClick={() => setShowConfirmModal(true)}
                   className={`w-full py-3 px-4 rounded-lg bg-${newPlanColor}-500 hover:bg-${newPlanColor}-600 text-white font-medium transition-colors flex items-center justify-center`}
-                  disabled={submitting}
+                  disabled={submitting || (error !== null && error.includes("Ya tienes este plan"))}
                 >
                   {submitting ? (
                     <>

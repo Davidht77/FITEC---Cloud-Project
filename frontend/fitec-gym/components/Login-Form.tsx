@@ -45,8 +45,8 @@ export default function LoginForm() {
       // Adjust the endpoint based on user type
       const endpoint =
         userType === "cliente"
-          ? "http://3.85.78.6:8080/auth/login"
-          : "http://3.85.78.6:8080/auth/employee/login"
+          ? "http://54.83.178.156:8080/auth/login"
+          : "http://54.83.178.156:8080/auth/employee/login"
 
       // Convertir userType de "cliente"/"empleado" a "client"/"employee" según Postman
       const apiUserType = userType === "cliente" ? "client" : "employee"

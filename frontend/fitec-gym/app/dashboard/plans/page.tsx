@@ -12,6 +12,17 @@ type Plan = {
   price: number
 }
 
+// Tipo para el cliente con su plan
+type Client = {
+  id: string
+  name: string
+  lastName: string
+  email: string
+  phone: string
+  address: string
+  plan: Plan | null
+}
+
 // Características de los planes
 const planFeatures = {
   "Plan Básico": [
@@ -44,88 +55,159 @@ const planIcons = {
   "Plan Premium": <Award className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors duration-300" />,
 }
 
+// Planes de fallback para usar si la API falla
+const fallbackPlans: Plan[] = [
+  {
+    id: "1",
+    name: "Plan Básico",
+    description: "Acceso limitado al gimnasio",
+    price: 50.0,
+  },
+  {
+    id: "2",
+    name: "Plan Plus",
+    description: "Incluye clases de yoga",
+    price: 80.0,
+  },
+  {
+    id: "3",
+    name: "Plan Premium",
+    description: "Todo incluido + entrenador personal",
+    price: 120.0,
+  },
+]
+
 export default function PlansPage() {
-  const [plans, setPlans] = useState<Plan[]>([])
+  const [plans, setPlans] = useState<Plan[]>(fallbackPlans) // Inicializar con planes de fallback
   const [loading, setLoading] = useState(true)
   const [userPlanId, setUserPlanId] = useState<string | null>(null)
-  // const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+  const [clientData, setClientData] = useState<Client | null>(null)
   const [detailPlan, setDetailPlan] = useState<Plan | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [dataFetched, setDataFetched] = useState(false)
 
-  // Cargar planes y plan del usuario
+  // Cargar planes y datos del cliente - optimizado para evitar múltiples re-renders
   useEffect(() => {
-    const fetchPlans = async () => {
+  // Si ya hemos cargado los datos, no hacemos nada
+  if (dataFetched) return
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+
+      // Obtener token y ID del usuario
+      const token = localStorage.getItem("token")
+      const userId = localStorage.getItem("id")
+
+      if (!token || !userId) {
+        throw new Error("No se encontró información de autenticación")
+      }
+
+      // Hacer ambas peticiones en paralelo para mejorar el rendimiento
+      const [clientResponse, plansResponse] = await Promise.all([
+        fetch(`http://54.83.178.156:8080/client/${userId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        fetch("http://54.83.178.156:8080/plan", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ])
+
+      // Procesar respuesta del cliente
+      if (clientResponse.ok) {
+        const clientData = await clientResponse.json()
+        setClientData(clientData)
+
+        // Guardar el ID del plan del usuario si tiene uno
+        if (clientData?.plan?.id) {
+          console.log("Plan del usuario:", clientData.plan.id)
+          setUserPlanId(clientData.plan.id)
+        } else {
+          console.warn("No se encontró el ID del plan del cliente.")
+        }
+      } else {
+        console.error("Error al cargar los datos del cliente")
+      }
+
+      // Procesar respuesta de planes
+      if (plansResponse.ok) {
+        const plansData = await plansResponse.json()
+        setPlans(plansData)
+      } else {
+        console.error("Error al cargar los planes")
+      }
+
+      // ✅ Marcar que los datos ya fueron cargados
+      setDataFetched(true)
+
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      setError(error instanceof Error ? error.message : "Error desconocido")
+
+      // Si no tenemos datos del cliente, usamos un valor por defecto para el plan
+      if (!clientData) {
+        setUserPlanId("1")
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchData()
+}, [dataFetched, clientData])
+
+
+  // Obtener detalles de un plan - optimizado para usar el plan de la lista si ya lo tenemos
+  const fetchPlanDetails = (planId: string) => {
+    // Buscar el plan en la lista que ya tenemos
+    const planFromList = plans.find((p) => p.id === planId)
+
+    if (planFromList) {
+      setDetailPlan(planFromList)
+      setShowDetailModal(true)
+      return
+    }
+
+    // Si no lo encontramos, hacer la petición
+    const fetchFromApi = async () => {
       try {
         setLoading(true)
-        const response = await fetch("http://54.83.178.156:8080/plan")
+        const token = localStorage.getItem("token")
+
+        const response = await fetch(`http://54.83.178.156:8080/plan/${planId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
         if (!response.ok) {
-          throw new Error("Error al cargar los planes")
+          throw new Error("Error al cargar los detalles del plan")
         }
 
         const data = await response.json()
-        setPlans(data)
-
-        // Intentar obtener el plan del usuario (simulado)
-        // En una implementación real, esto vendría de una API
-        const userPlanIdFromApi = localStorage.getItem("userPlanId") || "1" // Plan básico por defecto
-        setUserPlanId(userPlanIdFromApi)
+        setDetailPlan(data)
+        setShowDetailModal(true)
       } catch (error) {
-        console.error("Error fetching plans:", error)
-        // Datos de ejemplo como fallback
-        setPlans([
-          {
-            id: "1",
-            name: "Plan Básico",
-            description: "Acceso limitado al gimnasio",
-            price: 50.0,
-          },
-          {
-            id: "2",
-            name: "Plan Plus",
-            description: "Incluye clases de yoga",
-            price: 80.0,
-          },
-          {
-            id: "3",
-            name: "Plan Premium",
-            description: "Todo incluido + entrenador personal",
-            price: 120.0,
-          },
-        ])
-        setUserPlanId("1") // Plan básico por defecto
+        console.error("Error fetching plan details:", error)
+        // Usar el plan de la lista como fallback
+        const fallbackPlan = plans.find((p) => p.id === planId)
+        if (fallbackPlan) {
+          setDetailPlan(fallbackPlan)
+          setShowDetailModal(true)
+        }
       } finally {
         setLoading(false)
       }
     }
 
-    fetchPlans()
-  }, [])
-
-  // Obtener detalles de un plan
-  const fetchPlanDetails = async (planId: string) => {
-    try {
-      setLoading(true)
-      const response = await fetch(`http://localhost:8080/plan/${planId}`)
-
-      if (!response.ok) {
-        throw new Error("Error al cargar los detalles del plan")
-      }
-
-      const data = await response.json()
-      setDetailPlan(data)
-      setShowDetailModal(true)
-    } catch (error) {
-      console.error("Error fetching plan details:", error)
-      // Usar el plan de la lista como fallback
-      const fallbackPlan = plans.find((p) => p.id === planId)
-      if (fallbackPlan) {
-        setDetailPlan(fallbackPlan)
-        setShowDetailModal(true)
-      }
-    } finally {
-      setLoading(false)
-    }
+    fetchFromApi()
   }
 
   // Obtener color según el plan
@@ -147,19 +229,14 @@ export default function PlansPage() {
     return planId === userPlanId
   }
 
-  // Verificar si un plan es el seleccionado actualmente
-  // const isPlanSelected = (planId: string) => {
-  //   return planId === selectedPlan
-  // }
-
   // Cerrar modal de detalles
   const closeDetailModal = () => {
     setShowDetailModal(false)
     setDetailPlan(null)
   }
 
-  // Mostrar pantalla de carga
-  if (loading && plans.length === 0) {
+  // Mostrar pantalla de carga solo durante la carga inicial
+  if (loading && !dataFetched) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
@@ -169,19 +246,40 @@ export default function PlansPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Mensaje de error si existe */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-red-700 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
+          </svg>
+          {error}
+        </div>
+      )}
+
       {/* Encabezado */}
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Planes de Membresía</h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Elige el plan que mejor se adapte a tus necesidades y objetivos de fitness
         </p>
+
+        {/* Mostrar el plan actual del usuario si tiene uno */}
+        {clientData && clientData.plan && (
+          <div className="mt-4 inline-flex items-center px-4 py-2 bg-gray-100 rounded-full text-gray-700">
+            <Shield className="w-4 h-4 mr-2 text-gray-600" />
+            Tu plan actual: <span className="font-bold ml-1">{clientData.plan.name}</span>
+          </div>
+        )}
       </div>
 
       {/* Planes */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         {plans.map((plan) => {
           const isCurrentPlan = isUserPlan(plan.id)
-          // const isSelected = isPlanSelected(plan.id)
           const planColor = getPlanColor(plan.name)
 
           return (
@@ -191,10 +289,17 @@ export default function PlansPage() {
                 group
                 relative rounded-xl overflow-hidden transform transition-all duration-300
                 border-2 ${isCurrentPlan ? `border-${planColor}-500` : `border-${planColor}-200 hover:border-${planColor}-400`}
-                shadow-md hover:shadow-lg hover:scale-105
-                cursor-pointer
+                shadow-md hover:shadow-lg ${!isCurrentPlan && "hover:scale-105"}
+                ${isCurrentPlan ? "" : "cursor-pointer"}
               `}
             >
+              {/* Etiqueta de plan actual */}
+              {isCurrentPlan && (
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-3 py-1 text-xs font-bold z-10">
+                  Plan Actual
+                </div>
+              )}
+
               {/* Encabezado del plan */}
               <div
                 className={`
@@ -231,21 +336,16 @@ export default function PlansPage() {
                 {/* Botones de acción */}
                 <div className="mt-6 space-y-3">
                   {isCurrentPlan ? (
-                    <button
+                    <div
                       className={`w-full py-2 px-4 rounded-lg bg-${planColor}-100 text-${planColor}-700 font-medium flex items-center justify-center`}
-                      disabled
                     >
                       <Shield className="w-4 h-4 mr-2" />
-                      Plan Activo
-                    </button>
+                      Tu Plan Actual
+                    </div>
                   ) : (
                     <Link
                       href={`/dashboard/plans/change?planId=${plan.id}`}
                       className={`w-full py-2 px-4 rounded-lg bg-${planColor}-500 hover:bg-${planColor}-600 text-white font-medium transition-colors text-center block`}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        // Aquí puedes cerrar algún modal si es necesario
-                      }}
                     >
                       Cambiar a este plan
                     </Link>
@@ -253,10 +353,7 @@ export default function PlansPage() {
 
                   <button
                     className="w-full py-2 px-4 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 flex items-center justify-center"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      fetchPlanDetails(plan.id)
-                    }}
+                    onClick={() => fetchPlanDetails(plan.id)}
                   >
                     Ver detalles
                     <ChevronRight className="w-4 h-4 ml-1" />
@@ -284,10 +381,15 @@ export default function PlansPage() {
                 </th>
                 {plans.map((plan) => (
                   <th
-                    key={plan.id}
+                    key={`header-${plan.id}`}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     {plan.name}
+                    {isUserPlan(plan.id) && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Actual
+                      </span>
+                    )}
                   </th>
                 ))}
               </tr>
@@ -385,6 +487,11 @@ export default function PlansPage() {
               <div>
                 <h3 className="text-2xl font-bold">{detailPlan.name}</h3>
                 <p className="opacity-90">{detailPlan.description}</p>
+                {isUserPlan(detailPlan.id) && (
+                  <div className="mt-2 inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-300 text-yellow-800">
+                    Tu Plan Actual
+                  </div>
+                )}
               </div>
               <button
                 onClick={closeDetailModal}
@@ -452,7 +559,7 @@ export default function PlansPage() {
                     disabled
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    Plan Activo
+                    Tu Plan Actual
                   </button>
                 ) : (
                   <Link

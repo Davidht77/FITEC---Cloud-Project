@@ -33,30 +33,61 @@ export default function DashboardPage() {
   const [gymsData, setGymsData] = useState<Sede[]>([])
 
   useEffect(() => {
-    fetch("http://3.85.78.6:8080/sede") // o la URL real en la nube
-      .then((res) => {
-        if (!res.ok) throw new Error("Falló la API")
-        return res.json()
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 5000) // ⏱ cancela después de 5 segundos
+
+  const fetchSedes = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("No se encontró el token")
+
+      const res = await fetch("http://54.83.178.156:8080/sede", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
       })
-      .then((data) => {
-        // adapta si backend usa campos distintos
-        const formateadas = data.map((sede: any) => ({
-          id: sede.id,
-          name: sede.name,
-          location: sede.address,
-          image_url: sede.image_url || "/placeholder.svg",
-          currentUsers: sede.usuariosActuales || 0,
-          maxCapacity: sede.capacidad || 100,
-          isOpen: true, // opcional: si lo manejas
-          hours: "6:00 - 22:00", // opcional: si backend lo incluye
-        }))
-        setGymsData(formateadas)
-      })
-      .catch((error) => {
-        console.error("Usando sedes por defecto:", error)
+
+      if (!res.ok) throw new Error("Falló la API")
+
+      const data = await res.json()
+
+      const formateadas = data.map((sede: any) => ({
+        id: sede.id,
+        name: sede.name,
+        location: sede.address,
+        image_url: sede.image_url || "/placeholder.svg",
+        currentUsers: sede.usuariosActuales || 0,
+        maxCapacity: sede.capacidad || 100,
+        isOpen: true,
+        hours: "6:00 - 22:00",
+      }))
+
+      setGymsData(formateadas)
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        console.warn("⏰ Timeout al esperar la respuesta del backend")
+      } else {
+        console.error("⚠️ Usando sedes por defecto:", error)
         setGymsData(sedesPorDefecto)
-      })
-  }, [])
+      }
+    } finally {
+      clearTimeout(timeoutId) // Limpia el timeout
+    }
+  }
+
+  fetchSedes()
+
+  return () => {
+    controller.abort()
+    clearTimeout(timeoutId)
+  }
+}, [])
+
+
+
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">

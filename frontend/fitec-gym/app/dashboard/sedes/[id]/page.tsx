@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin, Phone, Users, Edit, Trash, Save, X } from "lucide-react"
 import Link from "next/link"
+import { use } from "react"
 
 // Tipo para la sede basado en el modelo proporcionado
 type Sede = {
@@ -20,17 +21,25 @@ const sedesPorDefecto: Sede[] = [
     id: "1",
     name: "Campus Central",
     address: "Av. Universitaria 1234",
-    phone: "987654321"
+    phone: "987654321",
   },
   {
     id: "2",
     name: "Campus Sur",
     address: "Calle Sur 456",
-    phone: "998877665"
-  }
+    phone: "998877665",
+  },
 ]
 
-export default function SedeDetailPage({ params }: { params: { id: string } }) {
+// Componente wrapper para manejar los parámetros
+function SedeDetailPageWrapper({ params }: { params: { id: string } }) {
+  // Usamos React.use para desenvolver los parámetros
+  const unwrappedParams = use(Promise.resolve(params))
+  return <SedeDetailPageContent id={unwrappedParams.id} />
+}
+
+// Componente principal que recibe el ID ya desenvuelto
+function SedeDetailPageContent({ id }: { id: string }) {
   const router = useRouter()
   const [sede, setSede] = useState<Sede | null>(null)
   const [loading, setLoading] = useState(true)
@@ -50,7 +59,11 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
     const fetchSede = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`http://localhost:8080/sede/${params.id}`)
+        const response = await fetch(`http://54.83.178.156:8080/sede/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
 
         if (!response.ok) {
           throw new Error("No encontrada en backend")
@@ -63,7 +76,7 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
         console.error("Error fetching sede:", err)
 
         // Buscar sede en datos fijos si el fetch falla
-        const fallback = sedesPorDefecto.find((s) => s.id === params.id)
+        const fallback = sedesPorDefecto.find((s) => s.id === id)
         if (fallback) {
           setSede(fallback)
           setEditForm(fallback)
@@ -76,7 +89,7 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
     }
 
     fetchSede()
-  }, [params.id])
+  }, [id])
 
   // Manejar cambios en el formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +106,7 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
     if (!editForm) return
 
     try {
-      const response = await fetch(`http://localhost:8080/sede/${params.id}`, {
+      const response = await fetch(`http://54.83.178.156:8080/sede/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +135,7 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/sede/${params.id}`, {
+      const response = await fetch(`http://54.83.178.156:8080/sede/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -133,7 +146,7 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
         throw new Error("Error al eliminar la sede")
       }
 
-      router.push("/dashboard")
+      router.push("/dashboard/sedes")
     } catch (err) {
       console.error("Error deleting sede:", err)
       alert("Error al eliminar la sede. Inténtalo de nuevo.")
@@ -157,11 +170,11 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
           <h2 className="text-xl font-bold text-red-700 mb-2">Error</h2>
           <p className="text-red-600 mb-4">{error || "No se pudo cargar la información de la sede"}</p>
           <Link
-            href="/dashboard"
+            href="/dashboard/sedes"
             className="inline-flex items-center px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver al Dashboard
+            Volver a Sedes
           </Link>
         </div>
       </div>
@@ -172,9 +185,9 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Navegación */}
       <div className="mb-6">
-        <Link href="/dashboard" className="inline-flex items-center text-sky-600 hover:text-sky-800">
+        <Link href="/dashboard/sedes" className="inline-flex items-center text-sky-600 hover:text-sky-800">
           <ArrowLeft className="w-4 h-4 mr-1" />
-          Volver al Dashboard
+          Volver a Sedes
         </Link>
       </div>
 
@@ -399,21 +412,21 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
       {/* Botones de acción */}
       <div className="mt-8 flex flex-wrap gap-4">
         <Link
-          href={`/sede/${params.id}/reservar`}
+          href={`/dashboard/sedes/${id}/reservar`}
           className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-medium flex items-center"
         >
           Reservar Clase
         </Link>
 
         <Link
-          href={`/sede/${params.id}/programas`}
+          href={`/dashboard/sedes/${id}/programas`}
           className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
         >
           Ver Programas
         </Link>
 
         <Link
-          href={`/sede/${params.id}/instructores`}
+          href={`/dashboard/sedes/${id}/instructores`}
           className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
         >
           Conoce a los Instructores
@@ -422,3 +435,6 @@ export default function SedeDetailPage({ params }: { params: { id: string } }) {
     </div>
   )
 }
+
+// Exportamos el componente wrapper como componente principal
+export default SedeDetailPageWrapper

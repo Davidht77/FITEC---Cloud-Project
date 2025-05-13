@@ -36,8 +36,8 @@ export default function PaymentsPage() {
         
         // Si hay un ID de cliente, cargar solo sus pagos
         const endpoint = clientId 
-          ? `http://localhost:8080/payment/client/${clientId}`
-          : "http://localhost:8080/payment"
+          ? `http://54.83.178.156:8080/payment/client/${clientId}`
+          : "http://54.83.178.156:8080/payment"
         
         const response = await fetch(endpoint, {
           headers: {

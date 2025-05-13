@@ -112,7 +112,12 @@ export default function DashboardNavbar() {
       {/* Botón de notificaciones */}
       <div className="relative">
         <button
-          onClick={() => setShowDropdown(!showDropdown)}
+          onClick={() => {
+            setShowDropdown(!showDropdown)
+            if (notifications > 0) {
+              setNotifications(0) // ✅ Borra la burbuja al hacer clic por primera vez
+            }
+          }}
           className="p-2 hover:bg-gray-100 rounded-full relative"
           aria-label="Notificaciones"
         >
